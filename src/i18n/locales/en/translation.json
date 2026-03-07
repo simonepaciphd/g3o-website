@@ -1,0 +1,49 @@
+{
+  "nav": {
+    "home": "Home",
+    "dashboard": "Explore Data",
+    "about": "About",
+    "team": "Team",
+    "funding": "Funding",
+    "research": "Research",
+    "policy": "Policy",
+    "data": "Data Access",
+    "faq": "FAQ",
+    "contact": "Contact"
+  },
+  "hero": {
+    "title": "Global Government GenAI Observatory",
+    "acronym": "G3O",
+    "subtitle": "Documenting and studying the use of generative AI across public institutions worldwide.",
+    "description": "G3O builds a versioned, open-source panel of institution-level observations that make public-sector GenAI use visible, comparable, and auditable at scale.",
+    "cta_explore": "Explore the Data",
+    "cta_learn": "Learn About G3O",
+    "cta_contribute": "Contribute Information"
+  },
+  "stats": {
+    "institutions": "Institutions Documented",
+    "countries": "Countries Covered",
+    "cases": "Documented Cases",
+    "outputs": "Research & Policy Outputs"
+  },
+  "overview": {
+    "title": "What is G3O?",
+    "track": "Tracks public-sector GenAI adoption across ~700,000 institutions globally",
+    "document": "Documents evidence, tools, vendors, safeguards, and governance practices",
+    "support": "Supports cumulative research and evidence-based policy",
+    "transparency": "Promotes transparency, reproducibility, and auditability"
+  },
+  "contribute": {
+    "title": "Help Build the Observatory",
+    "subtitle": "G3O is a collaborative effort. We rely on researchers, practitioners, and the public to help us build the most comprehensive picture of government GenAI use.",
+    "submit": "Submit Data",
+    "report_missing": "Report Missing Institutions",
+    "report_error": "Report an Error",
+    "collaborate": "Collaborate on Research"
+  },
+  "footer": {
+    "tagline": "Building a global panel of government generative AI use.",
+    "affiliations": "A project by researchers at Stanford University and the University of Rochester.",
+    "copyright": "© {{year}} G3O Project. All rights reserved."
+  }
+}
