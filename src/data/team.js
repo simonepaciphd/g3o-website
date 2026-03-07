@@ -26,6 +26,15 @@ export const teamMembers = [
     image: null,
     links: { website: '#' },
   },
+  {
+    id: 'vannutelli',
+    name: 'Silvia Vannutelli',
+    role: 'Co-Investigator',
+    affiliation: 'Northwestern University',
+    bio: 'Researcher studying public economics, government efficiency, and the impact of technology on public-sector performance.',
+    image: null,
+    links: { website: '#' },
+  },
 ];
 
 export const researchAssistants = [

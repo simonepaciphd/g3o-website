@@ -43,7 +43,7 @@
   },
   "footer": {
     "tagline": "Building a global panel of government generative AI use.",
-    "affiliations": "A project by researchers at Stanford University and the University of Rochester.",
+    "affiliations": "A project by researchers at Stanford University, Northwestern University, and the University of Rochester.",
     "copyright": "© {{year}} G3O Project. All rights reserved."
   }
 }
