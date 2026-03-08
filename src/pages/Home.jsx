@@ -1,6 +1,5 @@
 import Hero from '../components/home/Hero';
-import StatCounters from '../components/home/StatCounters';
-import GlobalMap from '../components/home/GlobalMap';
+import StatsAndMap from '../components/home/StatsAndMap';
 import ProjectOverview from '../components/home/ProjectOverview';
 import FeaturedCards from '../components/home/FeaturedCards';
 import CallForContributions from '../components/home/CallForContributions';
@@ -10,8 +9,7 @@ function Home() {
   return (
     <>
       <Hero />
-      <StatCounters />
-      <GlobalMap />
+      <StatsAndMap />
       <ProjectOverview />
       <FeaturedCards />
       <CallForContributions />
