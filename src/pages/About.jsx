@@ -159,6 +159,46 @@ function About() {
             </Link>
           </div>
         </section>
+
+        <section>
+          <SectionHeading
+            title="More Information"
+            subtitle="These pages remain part of the site and provide detail on access, support, and ways to get involved."
+          />
+          <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6">
+            {[
+              {
+                to: '/funding',
+                title: 'Funding & Support',
+                text: 'Learn how the initiative is supported and how we protect research independence.',
+              },
+              {
+                to: '/data-access',
+                title: 'Data Access',
+                text: 'Read about data access plans, methods, provenance, and transparency commitments.',
+              },
+              {
+                to: '/faq',
+                title: 'FAQ',
+                text: 'Find quick answers to common questions about G3O, the pilot, and collaboration.',
+              },
+              {
+                to: '/contact',
+                title: 'Contact',
+                text: 'Reach out to report an issue, contribute evidence, or explore a partnership.',
+              },
+            ].map((item) => (
+              <Link
+                key={item.to}
+                to={item.to}
+                className="block rounded-lg border border-gray-200 bg-white p-6 transition-shadow hover:shadow-md"
+              >
+                <h3 className="font-semibold text-primary-800 mb-2">{item.title}</h3>
+                <p className="text-sm leading-relaxed text-gray-600">{item.text}</p>
+              </Link>
+            ))}
+          </div>
+        </section>
       </div>
     </div>
   );

@@ -7,7 +7,7 @@ export const internalResearch = [
     type: 'Working Paper',
     abstract: 'This paper introduces G3O, a cross-national, cross-institutional measurement project designed to track governmental adoption and governance of generative AI over time.',
     status: 'Preliminary',
-    link: '#',
+    link: '/research/g3o-initiative',
   },
   {
     id: 'pilot-report',

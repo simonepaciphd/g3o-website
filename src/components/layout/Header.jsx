@@ -7,12 +7,8 @@ const navItems = [
   { to: '/dashboard', label: 'nav.dashboard' },
   { to: '/about', label: 'nav.about' },
   { to: '/team', label: 'nav.team' },
-  { to: '/funding', label: 'nav.funding' },
   { to: '/research', label: 'nav.research' },
   { to: '/policy', label: 'nav.policy' },
-  { to: '/data-access', label: 'nav.data' },
-  { to: '/faq', label: 'nav.faq' },
-  { to: '/contact', label: 'nav.contact' },
 ];
 
 function Header() {

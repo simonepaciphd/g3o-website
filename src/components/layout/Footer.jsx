@@ -6,7 +6,9 @@ const quickLinks = [
   { to: '/research', label: 'nav.research' },
   { to: '/dashboard', label: 'nav.dashboard' },
   { to: '/policy', label: 'nav.policy' },
+  { to: '/funding', label: 'nav.funding' },
   { to: '/data-access', label: 'nav.data' },
+  { to: '/faq', label: 'nav.faq' },
   { to: '/contact', label: 'nav.contact' },
 ];
 

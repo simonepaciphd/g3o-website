@@ -8,6 +8,7 @@ const About = lazy(() => import('./pages/About'));
 const Team = lazy(() => import('./pages/Team'));
 const Funding = lazy(() => import('./pages/Funding'));
 const Research = lazy(() => import('./pages/Research'));
+const ResearchPaper = lazy(() => import('./pages/ResearchPaper'));
 const Policy = lazy(() => import('./pages/Policy'));
 const DataAccess = lazy(() => import('./pages/DataAccess'));
 const FAQ = lazy(() => import('./pages/FAQ'));
@@ -31,6 +32,7 @@ function App() {
             <Route path="team" element={<Team />} />
             <Route path="funding" element={<Funding />} />
             <Route path="research" element={<Research />} />
+            <Route path="research/g3o-initiative" element={<ResearchPaper />} />
             <Route path="policy" element={<Policy />} />
             <Route path="data-access" element={<DataAccess />} />
             <Route path="faq" element={<FAQ />} />

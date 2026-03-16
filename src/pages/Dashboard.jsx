@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import pilotDashboardData from '../data/pilotDashboardData.json';
 import FilterPanel from '../components/dashboard/FilterPanel';
 import InstitutionProfile from '../components/dashboard/InstitutionProfile';
@@ -48,21 +49,27 @@ function Dashboard() {
           <div className="max-w-4xl">
             <h1 className="font-serif text-3xl font-bold text-[#1e3a5f]">Pilot Institution Dashboard</h1>
             <p className="mt-3 text-sm leading-relaxed text-gray-600">
-              This dashboard is now backed by the full pilot file
-              {' '}
-              <span className="font-medium text-gray-800">g3o_full_database_v1.csv</span>.
-              It is also filled with the current
-              {' '}
-              <span className="font-medium text-gray-800">master_institutions.csv</span>
-              {' '}
-              rows when the pilot backend does not yet contain a reviewed institution record.
-              Institutions are nested by country, government tier, branch, and region or locality.
-              Because the current pilot CSV does not yet include a dedicated region field, those
-              region labels are inferred where possible and shown transparently.
+              This public dashboard offers an early look at G3O's pilot data collection on
+              government use of generative AI. Coverage is preliminary and still expanding, so the
+              dashboard should be read as a research pilot rather than a complete census of public
+              institutions worldwide.
+            </p>
+            <p className="mt-3 text-sm leading-relaxed text-gray-600">
+              Institutions are organized by country, tier of government, branch, and region or
+              locality where available. Some structural coverage is included to show where pilot
+              evidence collection is still in progress.
             </p>
             <p className="mt-3 text-xs uppercase tracking-[0.18em] text-gray-400">
               Generated {new Date(pilotDashboardData.generatedAt).toLocaleString()}
             </p>
+            <div className="mt-4">
+              <Link
+                to="/data-access"
+                className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-medium text-[#1e3a5f] transition hover:bg-blue-100"
+              >
+                Read about data access and methodology
+              </Link>
+            </div>
           </div>
 
           <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -80,7 +87,7 @@ function Dashboard() {
           </div>
 
           <div className="mt-4 rounded-2xl border border-blue-100 bg-blue-50/70 px-4 py-3 text-sm text-blue-900">
-            <span className="font-semibold">Coverage in the current pilot:</span>
+            <span className="font-semibold">Coverage in this pilot release:</span>
             {' '}
             {pilotDashboardData.meta.evidenceCounts.yes} institutions with documented activity,
             {' '}
