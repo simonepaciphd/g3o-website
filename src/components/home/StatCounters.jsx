@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { globalStats } from '../../data/institutions';
+import { homeStats } from '../../data/siteMetrics';
 
 function useCountUp(target, duration = 1500) {
   const [value, setValue] = useState(0);
@@ -41,7 +41,7 @@ const statItems = [
 
 function StatCard({ statKey, icon }) {
   const { t } = useTranslation();
-  const target = globalStats[statKey];
+  const target = homeStats[statKey];
   const { value, ref } = useCountUp(target);
 
   return (

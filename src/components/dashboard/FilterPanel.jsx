@@ -9,12 +9,40 @@ const evidenceOptions = [
   { value: 'not_reviewed', label: 'Structure only / not yet reviewed' },
 ];
 
+const originOptions = [
+  { value: 'all', label: 'All coverage sources' },
+  { value: 'pilot_reviewed', label: 'Pilot-reviewed institutions' },
+  { value: 'pilot_added', label: 'Pilot-added institutions' },
+  { value: 'existing_source_linked', label: 'Existing-source linked institutions' },
+  { value: 'existing_source_only', label: 'Existing-source baseline only' },
+];
+
 const evidenceBadgeClasses = {
   yes: 'border-emerald-200 bg-emerald-50 text-emerald-700',
   unclear: 'border-amber-200 bg-amber-50 text-amber-700',
   no: 'border-slate-200 bg-slate-100 text-slate-600',
   not_reviewed: 'border-sky-200 bg-sky-50 text-sky-700',
 };
+
+function matchesOriginFilter(institution, originFilter) {
+  if (originFilter === 'pilot_reviewed') {
+    return institution.recordOrigin !== 'master';
+  }
+
+  if (originFilter === 'pilot_added') {
+    return institution.recordOrigin === 'pilot';
+  }
+
+  if (originFilter === 'existing_source_linked') {
+    return Boolean(institution.masterRecord);
+  }
+
+  if (originFilter === 'existing_source_only') {
+    return institution.recordOrigin === 'master';
+  }
+
+  return true;
+}
 
 function countSummary(institutions) {
   return institutions.reduce(
@@ -26,11 +54,16 @@ function countSummary(institutions) {
         summary.documentedCount += 1;
       }
 
+      if (institution.recordOrigin === 'pilot') {
+        summary.pilotAddedCount += 1;
+      }
+
       return summary;
     },
     {
       institutionCount: 0,
       documentedCount: 0,
+      pilotAddedCount: 0,
       countrySet: new Set(),
     },
   );
@@ -71,6 +104,9 @@ function InstitutionButton({ institution, isSelected, onSelect }) {
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <span className="block text-sm font-semibold text-[#1e3a5f]">{institution.name}</span>
+          <span className="mt-1 block text-[11px] text-gray-400">
+            Source: {institution.recordOriginLabel}
+          </span>
           <span className="mt-1 block text-xs text-gray-500">
             {institution.levelLabel} • {institution.branchLabel} • {institution.regionLabel}
           </span>
@@ -91,6 +127,7 @@ function FilterPanel({ institutions, selectedInstitutionId, onInstitutionSelect 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCountry, setSelectedCountry] = useState('');
   const [evidenceFilter, setEvidenceFilter] = useState('all');
+  const [originFilter, setOriginFilter] = useState('all');
   const [expandedCountries, setExpandedCountries] = useState([]);
   const deferredSearchQuery = useDeferredValue(searchQuery);
 
@@ -129,13 +166,17 @@ function FilterPanel({ institutions, selectedInstitutionId, onInstitutionSelect 
         return false;
       }
 
+      if (!matchesOriginFilter(institution, originFilter)) {
+        return false;
+      }
+
       if (query && !institution.searchText.includes(query)) {
         return false;
       }
 
       return true;
     });
-  }, [deferredSearchQuery, evidenceFilter, institutions, selectedCountry]);
+  }, [deferredSearchQuery, evidenceFilter, institutions, originFilter, selectedCountry]);
 
   const hierarchy = useMemo(() => buildInstitutionHierarchy(filteredInstitutions), [filteredInstitutions]);
 
@@ -181,6 +222,7 @@ function FilterPanel({ institutions, selectedInstitutionId, onInstitutionSelect 
     setSearchQuery('');
     setSelectedCountry('');
     setEvidenceFilter('all');
+    setOriginFilter('all');
   };
 
   const toggleCountry = (countryName) => {
@@ -199,7 +241,7 @@ function FilterPanel({ institutions, selectedInstitutionId, onInstitutionSelect 
       <div className="border-b border-gray-100 bg-gradient-to-br from-[#1e3a5f] to-[#2563eb] px-5 py-5 text-white">
         <h2 className="font-serif text-xl font-semibold">Institution Navigator</h2>
         <p className="mt-1 text-sm text-blue-50/90">
-          Browse the pilot backend by country, government tier, branch, and region or locality.
+          Browse the current public release by country, government tier, branch, and region or locality.
         </p>
       </div>
 
@@ -252,9 +294,26 @@ function FilterPanel({ institutions, selectedInstitutionId, onInstitutionSelect 
               ))}
             </select>
           </div>
+
+          <div>
+            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-gray-500">
+              Coverage source
+            </label>
+            <select
+              value={originFilter}
+              onChange={(event) => setOriginFilter(event.target.value)}
+              className={selectClasses}
+            >
+              {originOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
-        {(searchQuery || selectedCountry || evidenceFilter !== 'all') && (
+        {(searchQuery || selectedCountry || evidenceFilter !== 'all' || originFilter !== 'all') && (
           <button
             type="button"
             onClick={handleClear}
@@ -283,21 +342,26 @@ function FilterPanel({ institutions, selectedInstitutionId, onInstitutionSelect 
           </div>
           <div>
             <div className="text-[11px] font-medium uppercase tracking-wide text-gray-500">
+              Pilot-added visible
+            </div>
+            <div className="mt-1 text-lg font-semibold text-[#1e3a5f]">
+              {visibleSummary.pilotAddedCount}
+            </div>
+          </div>
+          <div>
+            <div className="text-[11px] font-medium uppercase tracking-wide text-gray-500">
               Documented activity
             </div>
             <div className="mt-1 text-lg font-semibold text-[#1e3a5f]">
               {visibleSummary.documentedCount}
             </div>
           </div>
-          <div>
-            <div className="text-[11px] font-medium uppercase tracking-wide text-gray-500">
-              Region notes
-            </div>
-            <div className="mt-1 text-xs leading-relaxed text-gray-600">
-              Inferred when the pilot CSV does not include a dedicated region field.
-            </div>
-          </div>
         </div>
+
+        <p className="text-xs leading-relaxed text-gray-500">
+          Region or locality labels are inferred when the pilot file does not include a dedicated
+          region field.
+        </p>
       </div>
 
       <div className="border-t border-gray-100 bg-gray-50/70 px-5 py-3">

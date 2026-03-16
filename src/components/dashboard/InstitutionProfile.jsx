@@ -22,6 +22,11 @@ const evidenceRecordLabels = {
   ambiguous: 'Ambiguous',
 };
 
+const baselineDatasetLabels = {
+  cross_country_legislative_national_ipu: 'IPU parliamentary baseline',
+  cross_country_judicial_national_wiki: 'Judicial baseline reference',
+};
+
 function Badge({ label, className }) {
   return (
     <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-medium ${className}`}>
@@ -67,35 +72,68 @@ function TagList({ items, emptyLabel = 'No entries recorded' }) {
   );
 }
 
-function Placeholder({ meta }) {
+function formatBaselineDataset(value) {
+  if (!value) {
+    return '\u2014';
+  }
+
+  return baselineDatasetLabels[value] || value.replace(/_/g, ' ');
+}
+
+function Placeholder({ overview }) {
   return (
     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
       <div className="bg-gradient-to-br from-[#1e3a5f] to-[#2563eb] px-6 py-6 text-white">
-        <h2 className="font-serif text-2xl font-semibold">Pilot backend loaded</h2>
+        <h2 className="font-serif text-2xl font-semibold">Explore the pilot evidence</h2>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-blue-50/90">
-          Select an institution from the navigator to inspect the full pilot record, including
-          government tier, branch, region or locality grouping, named activities, and source rows.
+          Select an institution from the navigator to review preliminary evidence on government
+          use of generative AI, together with the current institutional baseline merged from other
+          cross-country sources.
         </p>
       </div>
 
       <div className="grid gap-4 px-6 py-6 sm:grid-cols-2 xl:grid-cols-4">
         <div className="rounded-2xl bg-[#f7f9fc] p-4">
-          <div className="text-xs uppercase tracking-wide text-gray-500">Countries</div>
-          <div className="mt-2 text-3xl font-semibold text-[#1e3a5f]">{meta.countryCount}</div>
+          <div className="text-xs uppercase tracking-wide text-gray-500">Countries represented</div>
+          <div className="mt-2 text-3xl font-semibold text-[#1e3a5f]">{overview.totalCountries}</div>
         </div>
         <div className="rounded-2xl bg-[#f7f9fc] p-4">
-          <div className="text-xs uppercase tracking-wide text-gray-500">Institutions</div>
-          <div className="mt-2 text-3xl font-semibold text-[#1e3a5f]">{meta.institutionCount}</div>
+          <div className="text-xs uppercase tracking-wide text-gray-500">Institutions in database</div>
+          <div className="mt-2 text-3xl font-semibold text-[#1e3a5f]">{overview.totalInstitutions}</div>
         </div>
         <div className="rounded-2xl bg-[#f7f9fc] p-4">
-          <div className="text-xs uppercase tracking-wide text-gray-500">Documented activity</div>
-          <div className="mt-2 text-3xl font-semibold text-[#1e3a5f]">{meta.evidenceCounts.yes}</div>
-        </div>
-        <div className="rounded-2xl bg-[#f7f9fc] p-4">
-          <div className="text-xs uppercase tracking-wide text-gray-500">Structure-only fills</div>
+          <div className="text-xs uppercase tracking-wide text-gray-500">Pilot-reviewed institutions</div>
           <div className="mt-2 text-3xl font-semibold text-[#1e3a5f]">
-            {meta.evidenceCounts.not_reviewed}
+            {overview.pilotReviewedInstitutions}
           </div>
+        </div>
+        <div className="rounded-2xl bg-[#f7f9fc] p-4">
+          <div className="text-xs uppercase tracking-wide text-gray-500">Pilot-added institutions</div>
+          <div className="mt-2 text-3xl font-semibold text-[#1e3a5f]">
+            {overview.pilotAddedInstitutions}
+          </div>
+        </div>
+      </div>
+
+      <div className="grid gap-4 border-t border-gray-100 px-6 py-5 lg:grid-cols-2">
+        <div className="rounded-2xl border border-emerald-100 bg-emerald-50/80 p-4">
+          <div className="text-xs uppercase tracking-[0.18em] text-emerald-700">Pilot signal</div>
+          <p className="mt-2 text-sm leading-relaxed text-emerald-950">
+            The pilot contributes {overview.namedActivities} named activities and
+            {' '}
+            {overview.documentedActivityInstitutions} institutions with documented activity.
+          </p>
+        </div>
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <div className="text-xs uppercase tracking-[0.18em] text-slate-500">
+            Existing-source baseline
+          </div>
+          <p className="mt-2 text-sm leading-relaxed text-slate-800">
+            {overview.existingSourceLinkedInstitutions} institutions are currently linked to an
+            existing-source baseline, with {overview.matchedPilotAndExistingSourceInstitutions}
+            {' '}
+            already matched to pilot-reviewed records.
+          </p>
         </div>
       </div>
     </div>
@@ -206,9 +244,9 @@ function EvidenceRecord({ record }) {
   );
 }
 
-function InstitutionProfile({ institution, meta }) {
+function InstitutionProfile({ institution, overview }) {
   if (!institution) {
-    return <Placeholder meta={meta} />;
+    return <Placeholder overview={overview} />;
   }
 
   return (
@@ -264,7 +302,7 @@ function InstitutionProfile({ institution, meta }) {
       <Section title="Classification">
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           <MetaItem label="Evidence status" value={institution.evidenceLabel} />
-          <MetaItem label="Record origin" value={institution.recordOriginLabel} />
+          <MetaItem label="Coverage source" value={institution.recordOriginLabel} />
           <MetaItem label="Institution type" value={institution.institutionType || '\u2014'} />
           <MetaItem label="Adoption stages" value={formatList(institution.adoptionStages)} />
           <MetaItem label="Years announced" value={formatList(institution.yearAnnounced)} />
@@ -273,17 +311,18 @@ function InstitutionProfile({ institution, meta }) {
       </Section>
 
       {institution.masterRecord && (
-        <Section title="Master Coverage">
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <Section title="Existing-source Baseline">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
             <MetaItem label="Institution type" value={institution.masterRecord.institutionTypeLabel || '\u2014'} />
             <MetaItem label="Website" value={institution.masterRecord.website || '\u2014'} />
+            <MetaItem label="Baseline dataset" value={formatBaselineDataset(institution.masterRecord.sourceDatasetId)} />
             <MetaItem label="Retrieval date" value={institution.masterRecord.retrievalDate || '\u2014'} />
             <MetaItem label="Source file" value={institution.masterRecord.sourceFile || '\u2014'} />
           </div>
 
           {institution.masterRecord.notes?.length > 0 && (
             <div className="mt-5">
-              <div className="mb-2 text-xs uppercase tracking-wide text-gray-500">Master notes</div>
+              <div className="mb-2 text-xs uppercase tracking-wide text-gray-500">Baseline notes</div>
               <div className="space-y-2">
                 {institution.masterRecord.notes.map((note) => (
                   <p key={note} className="text-sm leading-relaxed text-gray-700">

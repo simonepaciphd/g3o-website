@@ -21,9 +21,9 @@
     "cta_contribute": "Contribute Information"
   },
   "stats": {
-    "institutions": "Institutions Documented",
-    "countries": "Countries Covered",
-    "cases": "Documented Cases",
+    "institutions": "Institutions in Database",
+    "countries": "Countries Represented",
+    "cases": "Pilot-documented Activities",
     "outputs": "Research & Policy Outputs"
   },
   "overview": {

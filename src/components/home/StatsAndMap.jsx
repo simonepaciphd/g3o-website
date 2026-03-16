@@ -6,17 +6,9 @@ import {
   Geography,
   ZoomableGroup,
 } from 'react-simple-maps';
-import { globalStats, countries } from '../../data/institutions';
+import { countryCoverage, getCountryCoverage, homeStats } from '../../data/siteMetrics';
 
 const GEO_URL = 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json';
-
-const alpha2ToNumeric = {
-  US: '840', GB: '826', FR: '250', DE: '276', NL: '528',
-  CA: '124', AU: '036', BR: '076', IN: '356', CN: '156',
-  KE: '404', NG: '566', JP: '392', KR: '410', IT: '380',
-  ES: '724', SE: '752', AL: '008', SG: '702', EE: '233',
-  MX: '484', ZA: '710', CL: '152', CO: '170', AR: '032',
-};
 
 function useCountUp(target, duration = 1500) {
   const [value, setValue] = useState(0);
@@ -57,7 +49,7 @@ const statItems = [
 
 function StatPill({ statKey }) {
   const { t } = useTranslation();
-  const target = globalStats[statKey];
+  const target = homeStats[statKey];
   const { value, ref } = useCountUp(target);
 
   return (
@@ -75,17 +67,8 @@ function StatPill({ statKey }) {
 function StatsAndMap() {
   const [tooltip, setTooltip] = useState(null);
 
-  const countryByNumeric = useMemo(() => {
-    const map = {};
-    countries.forEach((c) => {
-      const num = alpha2ToNumeric[c.code];
-      if (num) map[num] = c;
-    });
-    return map;
-  }, []);
-
   const maxCount = useMemo(
-    () => Math.max(...countries.map((c) => c.count)),
+    () => Math.max(...countryCoverage.map((entry) => entry.totalInstitutions), 1),
     []
   );
 
@@ -102,14 +85,38 @@ function StatsAndMap() {
     };
   }, [maxCount]);
 
+  const lookupCountryCoverage = (geography) => {
+    const candidateNames = [
+      geography.properties?.name,
+      geography.properties?.NAME,
+      geography.properties?.ADMIN,
+      geography.properties?.NAME_LONG,
+    ].filter(Boolean);
+
+    for (const candidateName of candidateNames) {
+      const match = getCountryCoverage(candidateName);
+
+      if (match) {
+        return match;
+      }
+    }
+
+    return null;
+  };
+
   return (
     <section className="bg-[#0f1f35] border-t border-white/[0.06]">
       <div className="max-w-6xl mx-auto px-6 py-12">
-        {/* Stats row */}
         <div className="flex flex-wrap items-center justify-between gap-6 mb-8">
-          <h2 className="font-serif text-2xl md:text-3xl font-bold text-white/90">
-            Global Coverage
-          </h2>
+          <div>
+            <h2 className="font-serif text-2xl md:text-3xl font-bold text-white/90">
+              Global Coverage
+            </h2>
+            <p className="mt-2 max-w-3xl text-sm leading-relaxed text-blue-200/75">
+              Coverage combines pilot-reviewed institutions with currently linked existing-source
+              baselines. Activity counts reflect named GenAI uses documented in the pilot.
+            </p>
+          </div>
           <div className="flex flex-wrap gap-x-8 gap-y-3">
             {statItems.map((item) => (
               <StatPill key={item.key} statKey={item.key} />
@@ -117,7 +124,6 @@ function StatsAndMap() {
           </div>
         </div>
 
-        {/* Map */}
         <div className="relative rounded-xl overflow-hidden border border-white/[0.08] bg-[#0a1628]">
           <ComposableMap
             projectionConfig={{ scale: 147 }}
@@ -128,18 +134,17 @@ function StatsAndMap() {
               <Geographies geography={GEO_URL}>
                 {({ geographies }) =>
                   geographies.map((geo) => {
-                    const numericId = geo.id;
-                    const match = countryByNumeric[numericId];
+                    const match = lookupCountryCoverage(geo);
                     return (
                       <Geography
                         key={geo.rsmKey}
                         geography={geo}
-                        fill={match ? colorScale(match.count) : '#1a2744'}
+                        fill={match ? colorScale(match.totalInstitutions) : '#1a2744'}
                         stroke="#0f1f35"
                         strokeWidth={0.5}
                         onMouseEnter={() => {
                           if (match) {
-                            setTooltip({ name: match.name, count: match.count });
+                            setTooltip(match);
                           }
                         }}
                         onMouseLeave={() => setTooltip(null)}
@@ -162,16 +167,21 @@ function StatsAndMap() {
 
           {tooltip && (
             <div className="absolute top-3 right-3 bg-[#1e3a5f]/90 backdrop-blur-sm border border-white/10 rounded-lg shadow-xl px-4 py-2.5 pointer-events-none">
-              <p className="font-semibold text-white text-sm">{tooltip.name}</p>
+              <p className="font-semibold text-white text-sm">{tooltip.country}</p>
               <p className="text-xs text-blue-200/70">
-                {tooltip.count} documented case{tooltip.count !== 1 ? 's' : ''}
+                {tooltip.totalInstitutions.toLocaleString()} institutions in database
+              </p>
+              <p className="text-xs text-blue-200/70">
+                {tooltip.namedActivities.toLocaleString()} pilot-documented
+                {' '}
+                {tooltip.namedActivities === 1 ? 'activity' : 'activities'}
               </p>
             </div>
           )}
         </div>
 
         <p className="text-center text-xs text-blue-300/40 mt-3">
-          Hover over highlighted countries to see documented cases
+          Hover over highlighted countries to see merged database coverage
         </p>
       </div>
     </section>

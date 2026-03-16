@@ -1,47 +1,26 @@
 import { useState, useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
 import {
   ComposableMap,
   Geographies,
   Geography,
   ZoomableGroup,
 } from 'react-simple-maps';
-import { countries } from '../../data/institutions';
+import { countryCoverage, getCountryCoverage } from '../../data/siteMetrics';
 
 const GEO_URL = 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json';
 
-// ISO 3166-1 alpha-2 to numeric mapping for countries in our dataset
-const alpha2ToNumeric = {
-  US: '840', GB: '826', FR: '250', DE: '276', NL: '528',
-  CA: '124', AU: '036', BR: '076', IN: '356', CN: '156',
-  KE: '404', NG: '566', JP: '392', KR: '410', IT: '380',
-  ES: '724', SE: '752', AL: '008', SG: '702', EE: '233',
-  MX: '484', ZA: '710', CL: '152', CO: '170', AR: '032',
-};
-
 function GlobalMap() {
-  const { t } = useTranslation();
   const [tooltip, setTooltip] = useState(null);
 
-  const countryByNumeric = useMemo(() => {
-    const map = {};
-    countries.forEach((c) => {
-      const num = alpha2ToNumeric[c.code];
-      if (num) map[num] = c;
-    });
-    return map;
-  }, []);
-
   const maxCount = useMemo(
-    () => Math.max(...countries.map((c) => c.count)),
+    () => Math.max(...countryCoverage.map((entry) => entry.totalInstitutions), 1),
     []
   );
 
   const colorScale = useMemo(() => {
-    // Linear interpolation between light blue and dark blue
     const lerp = (a, b, t) => Math.round(a + (b - a) * t);
     const from = [147, 197, 253]; // #93c5fd
-    const to = [30, 58, 95];     // #1e3a5f
+    const to = [30, 58, 95]; // #1e3a5f
     return (value) => {
       const t = Math.min(value / maxCount, 1);
       const r = lerp(from[0], to[0], t);
@@ -50,6 +29,25 @@ function GlobalMap() {
       return `rgb(${r},${g},${b})`;
     };
   }, [maxCount]);
+
+  const lookupCountryCoverage = (geography) => {
+    const candidateNames = [
+      geography.properties?.name,
+      geography.properties?.NAME,
+      geography.properties?.ADMIN,
+      geography.properties?.NAME_LONG,
+    ].filter(Boolean);
+
+    for (const candidateName of candidateNames) {
+      const match = getCountryCoverage(candidateName);
+
+      if (match) {
+        return match;
+      }
+    }
+
+    return null;
+  };
 
   return (
     <section className="py-16 bg-white">
@@ -68,20 +66,20 @@ function GlobalMap() {
               <Geographies geography={GEO_URL}>
                 {({ geographies }) =>
                   geographies.map((geo) => {
-                    const numericId = geo.id;
-                    const match = countryByNumeric[numericId];
+                    const match = lookupCountryCoverage(geo);
                     return (
                       <Geography
                         key={geo.rsmKey}
                         geography={geo}
-                        fill={match ? colorScale(match.count) : '#e5e7eb'}
+                        fill={match ? colorScale(match.totalInstitutions) : '#e5e7eb'}
                         stroke="#fff"
                         strokeWidth={0.5}
                         onMouseEnter={() => {
                           if (match) {
                             setTooltip({
-                              name: match.name,
-                              count: match.count,
+                              country: match.country,
+                              institutions: match.totalInstitutions,
+                              activities: match.namedActivities,
                             });
                           }
                         }}
@@ -105,16 +103,21 @@ function GlobalMap() {
 
           {tooltip && (
             <div className="absolute top-4 right-4 bg-white border border-gray-200 rounded-lg shadow-lg px-4 py-3 pointer-events-none">
-              <p className="font-semibold text-[#1e3a5f]">{tooltip.name}</p>
+              <p className="font-semibold text-[#1e3a5f]">{tooltip.country}</p>
               <p className="text-sm text-gray-600">
-                {tooltip.count} documented case{tooltip.count !== 1 ? 's' : ''}
+                {tooltip.institutions.toLocaleString()} institutions in database
+              </p>
+              <p className="text-sm text-gray-600">
+                {tooltip.activities.toLocaleString()} pilot-documented
+                {' '}
+                {tooltip.activities === 1 ? 'activity' : 'activities'}
               </p>
             </div>
           )}
         </div>
 
         <p className="text-center text-sm text-gray-500 mt-4">
-          Click a country to explore its institutions in the dashboard
+          Hover over highlighted countries to see merged database coverage
         </p>
       </div>
     </section>
