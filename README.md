@@ -6,6 +6,7 @@ Prototype website for the G3O project, a cross-national measurement initiative t
 
 ```bash
 npm install --legacy-peer-deps
+npm run generate:data
 npm run dev        # Start dev server
 npm run build      # Production build → dist/
 npm run preview    # Preview production build
@@ -43,11 +44,13 @@ src/
 └── i18n/              i18next setup + English locale
 ```
 
-## Mock Data
+## Data Sources
 
-All mock data lives in `src/data/`. Each file exports structured arrays/objects that mirror the eventual API response format. Replace these with live API calls when the backend is ready.
+The dashboard now uses a generated dataset in `src/data/pilotDashboardData.json`.
 
-- **institutions.js** — countries, institution types, regions, sample institutions, global stats
+- **pilotDashboardData.json** — generated from `g3o_full_database_v1.csv` and filled from `master_institutions.csv`
+- **scripts/generatePilotData.mjs** — local generator for refreshing the committed dashboard dataset
+- **institutions.js** — remaining homepage/dashboard legacy mock data still used outside the merged dashboard flow
 - **team.js** — team members, research assistants
 - **research.js** — internal/external papers, symposium info
 - **policy.js** — best practices, highlighted cases, legislative template, disclosure template
@@ -61,7 +64,7 @@ All mock data lives in `src/data/`. Each file exports structured arrays/objects 
 | Site structure and navigation | Ready |
 | All 10 pages with content | Ready |
 | World map with country highlighting | Ready (mock data) |
-| Dashboard filter → profile → comparison flow | Ready (mock data) |
+| Dashboard filter → profile → comparison flow | Ready (pilot CSV + master structure fill) |
 | Legislative template and disclosure template | Ready (draft content) |
 | API documentation | Placeholder (example endpoints) |
 | i18n architecture | Ready (English only) |
@@ -85,18 +88,21 @@ All mock data lives in `src/data/`. Each file exports structured arrays/objects 
 3. **Localization**: Add translation files for additional languages in `src/i18n/locales/`
 4. **Map interactivity**: Add click-to-drill-down from map countries to dashboard filtered view
 5. **Contribution forms**: Wire contact/contribution forms to a backend or form service
-6. **GitHub Pages deployment**: Add GitHub Actions workflow for automatic deployment on push
+6. **GitHub Pages deployment**: Workflow is present; commit regenerated `src/data/pilotDashboardData.json` before push
 7. **Team photos**: Add actual team member photos to `public/` and reference in `src/data/team.js`
 8. **Search**: Add full-text search across institutions
 9. **Real stat counters**: Connect homepage counters to live database counts
 
 ## Deployment
 
-The site is configured for GitHub Pages with `base: '/g3o-website/'` in `vite.config.js`. To deploy:
+The site is configured for GitHub Pages with `base: '/g3o-website/'` in `vite.config.js`. The GitHub Actions workflow deploys on push to `main`.
+
+Local refresh flow:
 
 ```bash
+npm run generate:data
 npm run build
-# Push dist/ contents to gh-pages branch
+# Commit and push to main
 ```
 
-Or set up a GitHub Actions workflow for automatic deployment.
+If the source CSVs are not available on the machine running the build, the generator keeps the committed `src/data/pilotDashboardData.json` in place so GitHub Pages can still deploy successfully.

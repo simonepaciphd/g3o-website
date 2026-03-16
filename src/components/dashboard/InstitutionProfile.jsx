@@ -1,137 +1,435 @@
 import { Link } from 'react-router-dom';
+import { formatList, formatSignal } from '../../utils/dashboardUtils';
 
-const statusColors = {
-  Active: 'bg-[#10b981]/10 text-[#10b981] border-[#10b981]/20',
-  Pilot: 'bg-amber-50 text-amber-700 border-amber-200',
-  Planned: 'bg-blue-50 text-[#2563eb] border-blue-200',
+const evidenceColors = {
+  yes: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+  unclear: 'border-amber-200 bg-amber-50 text-amber-700',
+  no: 'border-slate-200 bg-slate-100 text-slate-600',
+  not_reviewed: 'border-sky-200 bg-sky-50 text-sky-700',
 };
 
 const confidenceColors = {
-  High: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  Medium: 'bg-yellow-50 text-yellow-700 border-yellow-200',
-  Low: 'bg-red-50 text-red-600 border-red-200',
+  High: 'border-sky-200 bg-sky-50 text-sky-700',
+  Medium: 'border-amber-200 bg-amber-50 text-amber-700',
+  Low: 'border-rose-200 bg-rose-50 text-rose-700',
+  'Not rated': 'border-slate-200 bg-slate-100 text-slate-600',
 };
 
-function Badge({ label, colorMap }) {
-  const colors = colorMap[label] || 'bg-gray-100 text-gray-600 border-gray-200';
+const evidenceRecordLabels = {
+  confirms_absence: 'Confirms absence',
+  background_only: 'Background only',
+  confirms_activity: 'Confirms activity',
+  ambiguous: 'Ambiguous',
+};
+
+function Badge({ label, className }) {
   return (
-    <span className={`inline-block rounded-full border px-2.5 py-0.5 text-xs font-medium ${colors}`}>
+    <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-medium ${className}`}>
       {label}
     </span>
-  );
-}
-
-function Section({ title, children }) {
-  return (
-    <div className="border-t border-gray-100 px-6 py-4">
-      <h3 className="mb-2 text-xs font-medium uppercase tracking-wide text-gray-500">{title}</h3>
-      {children}
-    </div>
   );
 }
 
 function MetaItem({ label, value }) {
   return (
     <div>
-      <dt className="text-xs text-gray-500">{label}</dt>
-      <dd className="mt-0.5 text-sm font-medium text-gray-800">{value || '\u2014'}</dd>
+      <dt className="text-xs uppercase tracking-wide text-gray-500">{label}</dt>
+      <dd className="mt-1 text-sm font-medium text-gray-800">{value || '\u2014'}</dd>
     </div>
   );
 }
 
-function InstitutionProfile({ institution }) {
-  if (!institution) {
-    return (
-      <div className="flex min-h-[400px] items-center justify-center rounded-xl border border-dashed border-gray-300 bg-white">
-        <div className="text-center">
-          <svg className="mx-auto h-12 w-12 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-          </svg>
-          <p className="mt-3 text-sm text-gray-500">Select an institution from the panel to view its profile</p>
-        </div>
-      </div>
-    );
+function Section({ title, children }) {
+  return (
+    <section className="border-t border-gray-100 px-6 py-5">
+      <h3 className="mb-3 text-xs font-medium uppercase tracking-[0.18em] text-gray-500">{title}</h3>
+      {children}
+    </section>
+  );
+}
+
+function TagList({ items, emptyLabel = 'No entries recorded' }) {
+  if (!items?.length) {
+    return <p className="text-sm text-gray-500">{emptyLabel}</p>;
   }
 
-  const inst = institution;
+  return (
+    <div className="flex flex-wrap gap-2">
+      {items.map((item) => (
+        <span
+          key={item}
+          className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-medium text-gray-700"
+        >
+          {item}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function Placeholder({ meta }) {
+  return (
+    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+      <div className="bg-gradient-to-br from-[#1e3a5f] to-[#2563eb] px-6 py-6 text-white">
+        <h2 className="font-serif text-2xl font-semibold">Pilot backend loaded</h2>
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-blue-50/90">
+          Select an institution from the navigator to inspect the full pilot record, including
+          government tier, branch, region or locality grouping, named activities, and source rows.
+        </p>
+      </div>
+
+      <div className="grid gap-4 px-6 py-6 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="rounded-2xl bg-[#f7f9fc] p-4">
+          <div className="text-xs uppercase tracking-wide text-gray-500">Countries</div>
+          <div className="mt-2 text-3xl font-semibold text-[#1e3a5f]">{meta.countryCount}</div>
+        </div>
+        <div className="rounded-2xl bg-[#f7f9fc] p-4">
+          <div className="text-xs uppercase tracking-wide text-gray-500">Institutions</div>
+          <div className="mt-2 text-3xl font-semibold text-[#1e3a5f]">{meta.institutionCount}</div>
+        </div>
+        <div className="rounded-2xl bg-[#f7f9fc] p-4">
+          <div className="text-xs uppercase tracking-wide text-gray-500">Documented activity</div>
+          <div className="mt-2 text-3xl font-semibold text-[#1e3a5f]">{meta.evidenceCounts.yes}</div>
+        </div>
+        <div className="rounded-2xl bg-[#f7f9fc] p-4">
+          <div className="text-xs uppercase tracking-wide text-gray-500">Structure-only fills</div>
+          <div className="mt-2 text-3xl font-semibold text-[#1e3a5f]">
+            {meta.evidenceCounts.not_reviewed}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ActivityCard({ activity }) {
+  return (
+    <article className="rounded-2xl border border-gray-200 bg-gray-50/60 p-4">
+      <h4 className="text-sm font-semibold text-[#1e3a5f]">{activity.name}</h4>
+      <dl className="mt-3 grid gap-3 text-sm sm:grid-cols-2 xl:grid-cols-3">
+        <MetaItem label="Stage" value={activity.stage || '\u2014'} />
+        <MetaItem label="Type" value={activity.type || '\u2014'} />
+        <MetaItem label="Tool" value={activity.toolName || '\u2014'} />
+        <MetaItem label="Vendor" value={activity.vendor || '\u2014'} />
+        <MetaItem label="Access" value={activity.accessType || '\u2014'} />
+        <MetaItem label="Interaction" value={activity.interactionType || '\u2014'} />
+        <MetaItem label="Deployment" value={activity.deploymentMode || '\u2014'} />
+        <MetaItem label="Target users" value={activity.targetUsers || '\u2014'} />
+        <MetaItem
+          label="Years"
+          value={
+            activity.yearDeployed || activity.yearAnnounced
+              ? [activity.yearAnnounced, activity.yearDeployed].filter(Boolean).join(' / ')
+              : '\u2014'
+          }
+        />
+      </dl>
+    </article>
+  );
+}
+
+function EvidenceRecord({ record }) {
+  return (
+    <article className="rounded-2xl border border-gray-200 bg-white p-4">
+      <div className="flex flex-wrap items-center gap-2">
+        {record.sourceType && (
+          <Badge
+            label={record.sourceType.replace(/_/g, ' ')}
+            className="border-gray-200 bg-gray-50 text-gray-600"
+          />
+        )}
+        {record.sourceCredibility && (
+          <Badge
+            label={`${record.sourceCredibility} credibility`}
+            className="border-gray-200 bg-gray-50 text-gray-600"
+          />
+        )}
+        {record.confidence && (
+          <Badge
+            label={`${record.confidence} confidence`}
+            className="border-gray-200 bg-gray-50 text-gray-600"
+          />
+        )}
+      </div>
+
+      <h4 className="mt-3 text-sm font-semibold text-[#1e3a5f]">
+        {record.sourceTitle || 'Untitled source row'}
+      </h4>
+
+      <div className="mt-2 text-xs text-gray-500">
+        {[record.sourcePublicationDate, record.sourceAccessDate, record.sourceLanguage]
+          .filter((value) => value && value !== 'unknown')
+          .join(' • ') || 'Publication details not supplied'}
+      </div>
+
+      {record.genaiEvidence && (
+        <p className="mt-3 text-sm leading-relaxed text-gray-700">
+          {evidenceRecordLabels[record.genaiEvidence] || record.genaiEvidence}
+        </p>
+      )}
+
+      {record.sourceSnippet && (
+        <p className="mt-2 text-sm leading-relaxed text-gray-600">{record.sourceSnippet}</p>
+      )}
+
+      {(record.outcomes || record.incidents) && (
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <div>
+            <div className="text-xs uppercase tracking-wide text-gray-500">Reported outcomes</div>
+            <p className="mt-1 text-sm text-gray-700">{record.outcomes || '\u2014'}</p>
+          </div>
+          <div>
+            <div className="text-xs uppercase tracking-wide text-gray-500">Reported incidents</div>
+            <p className="mt-1 text-sm text-gray-700">{record.incidents || '\u2014'}</p>
+          </div>
+        </div>
+      )}
+
+      {record.uncertaintyFlags?.length > 0 && record.uncertaintyFlags[0] !== 'none' && (
+        <div className="mt-3">
+          <div className="mb-2 text-xs uppercase tracking-wide text-gray-500">Uncertainty flags</div>
+          <TagList items={record.uncertaintyFlags} />
+        </div>
+      )}
+
+      {record.sourceUrl && record.sourceUrl !== 'unknown' && (
+        <a
+          href={record.sourceUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-4 inline-block text-sm font-medium text-[#2563eb] hover:underline"
+        >
+          View source
+        </a>
+      )}
+    </article>
+  );
+}
+
+function InstitutionProfile({ institution, meta }) {
+  if (!institution) {
+    return <Placeholder meta={meta} />;
+  }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-[#1e3a5f] to-[#2563eb] px-6 py-5">
-        <h2 className="font-serif text-xl font-bold text-white">{inst.name}</h2>
-        <div className="mt-2 flex flex-wrap gap-2">
-          <Badge label={inst.status} colorMap={statusColors} />
-          <Badge label={`${inst.confidence} confidence`} colorMap={{ [`${inst.confidence} confidence`]: confidenceColors[inst.confidence] }} />
+    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+      <div className="bg-gradient-to-br from-[#1e3a5f] via-[#24527f] to-[#2563eb] px-6 py-6 text-white">
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge
+            label={institution.evidenceLabel}
+            className={evidenceColors[institution.hasGenaiActivity] || evidenceColors.no}
+          />
+          <Badge
+            label={`${institution.confidenceLabel} confidence`}
+            className={
+              confidenceColors[institution.confidenceLabel] || confidenceColors['Not rated']
+            }
+          />
         </div>
+
+        <h2 className="mt-4 font-serif text-2xl font-semibold">{institution.name}</h2>
+        <p className="mt-2 text-sm text-blue-50/90">
+          {institution.country} • {institution.levelLabel} • {institution.branchLabel} •{' '}
+          {institution.regionLabel}
+        </p>
       </div>
 
-      {/* Metadata Grid */}
-      <div className="grid grid-cols-2 gap-4 px-6 py-4 sm:grid-cols-3 lg:grid-cols-5">
-        <MetaItem label="Country" value={inst.countryName} />
-        <MetaItem label="Region" value={inst.region} />
-        <MetaItem label="Locality" value={inst.locality} />
-        <MetaItem label="Tier" value={inst.tier} />
-        <MetaItem label="Date Documented" value={inst.dateDocumented} />
+      <div className="grid gap-4 px-6 py-5 sm:grid-cols-2 xl:grid-cols-4">
+        <MetaItem label="Country" value={institution.country} />
+        <MetaItem label="Government tier" value={institution.levelLabel} />
+        <MetaItem label="Branch" value={institution.branchLabel} />
+        <MetaItem label="Region or locality" value={institution.regionLabel} />
+        <MetaItem label="Activities" value={String(institution.activityCount)} />
+        <MetaItem label="Source rows" value={String(institution.sourceCount)} />
+        <MetaItem label="Latest source date" value={institution.latestSourceDate || '\u2014'} />
+        <MetaItem label="Search languages" value={formatList(institution.searchLanguages)} />
       </div>
 
-      {/* Evidence */}
-      <Section title="Evidence of GenAI Usage">
-        <p className="text-sm leading-relaxed text-gray-700">{inst.evidenceSummary}</p>
-      </Section>
-
-      {/* Tool & Vendor */}
-      <Section title="Tool &amp; Vendor">
-        <div className="grid grid-cols-2 gap-4">
-          <MetaItem label="Tool" value={inst.tool} />
-          <MetaItem label="Vendor" value={inst.vendor} />
-        </div>
-      </Section>
-
-      {/* Safeguards */}
-      <Section title="Safeguards">
-        <p className="text-sm leading-relaxed text-gray-700">{inst.safeguards || 'No safeguard information available.'}</p>
-      </Section>
-
-      {/* Source & Provenance */}
-      <Section title="Source &amp; Provenance">
-        <p className="text-sm text-gray-700">{inst.source}</p>
-        {inst.sourceUrl && inst.sourceUrl !== '#' && (
-          <a
-            href={inst.sourceUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-1 inline-block text-sm font-medium text-[#2563eb] hover:underline"
-          >
-            View source
-          </a>
+      <Section title="Institution Summary">
+        <p className="text-sm leading-relaxed text-gray-700">{institution.summary}</p>
+        {institution.scopeNotes?.length > 0 && (
+          <div className="mt-4">
+            <div className="mb-2 text-xs uppercase tracking-wide text-gray-500">Scope notes</div>
+            <div className="space-y-2">
+              {institution.scopeNotes.map((note) => (
+                <p key={note} className="text-sm leading-relaxed text-gray-600">
+                  {note}
+                </p>
+              ))}
+            </div>
+          </div>
         )}
       </Section>
 
-      {/* Notes */}
-      {inst.notes && (
-        <Section title="Notes">
-          <p className="text-sm italic leading-relaxed text-gray-600">{inst.notes}</p>
+      <Section title="Classification">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <MetaItem label="Evidence status" value={institution.evidenceLabel} />
+          <MetaItem label="Record origin" value={institution.recordOriginLabel} />
+          <MetaItem label="Institution type" value={institution.institutionType || '\u2014'} />
+          <MetaItem label="Adoption stages" value={formatList(institution.adoptionStages)} />
+          <MetaItem label="Years announced" value={formatList(institution.yearAnnounced)} />
+          <MetaItem label="Years deployed" value={formatList(institution.yearDeployed)} />
+        </div>
+      </Section>
+
+      {institution.masterRecord && (
+        <Section title="Master Coverage">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <MetaItem label="Institution type" value={institution.masterRecord.institutionTypeLabel || '\u2014'} />
+            <MetaItem label="Website" value={institution.masterRecord.website || '\u2014'} />
+            <MetaItem label="Retrieval date" value={institution.masterRecord.retrievalDate || '\u2014'} />
+            <MetaItem label="Source file" value={institution.masterRecord.sourceFile || '\u2014'} />
+          </div>
+
+          {institution.masterRecord.notes?.length > 0 && (
+            <div className="mt-5">
+              <div className="mb-2 text-xs uppercase tracking-wide text-gray-500">Master notes</div>
+              <div className="space-y-2">
+                {institution.masterRecord.notes.map((note) => (
+                  <p key={note} className="text-sm leading-relaxed text-gray-700">
+                    {note}
+                  </p>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {institution.masterRecord.website && (
+            <a
+              href={institution.masterRecord.website}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-4 inline-block text-sm font-medium text-[#2563eb] hover:underline"
+            >
+              Visit institution website
+            </a>
+          )}
         </Section>
       )}
 
-      {/* Action Buttons */}
-      <div className="flex flex-wrap gap-3 border-t border-gray-100 px-6 py-4">
+      <Section title="Tools And Vendors">
+        <div className="grid gap-5 lg:grid-cols-2">
+          <div>
+            <div className="mb-2 text-xs uppercase tracking-wide text-gray-500">Tools</div>
+            <TagList items={institution.tools} emptyLabel="No tool named in the current pilot file" />
+          </div>
+          <div>
+            <div className="mb-2 text-xs uppercase tracking-wide text-gray-500">Vendors</div>
+            <TagList items={institution.vendors} emptyLabel="No vendor named in the current pilot file" />
+          </div>
+        </div>
+      </Section>
+
+      <Section title="Governance Signals">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <MetaItem
+            label="Human oversight"
+            value={formatSignal(institution.safeguardSignals.humanOversight)}
+          />
+          <MetaItem
+            label="Transparency notice"
+            value={formatSignal(institution.safeguardSignals.transparencyNotice)}
+          />
+          <MetaItem
+            label="Data classification"
+            value={formatSignal(institution.safeguardSignals.dataClassification)}
+          />
+          <MetaItem
+            label="Risk assessment"
+            value={formatSignal(institution.safeguardSignals.riskAssessment)}
+          />
+        </div>
+
+        {(institution.reportedOutcomes.length > 0 || institution.reportedIncidents.length > 0) && (
+          <div className="mt-5 grid gap-5 lg:grid-cols-2">
+            <div>
+              <div className="mb-2 text-xs uppercase tracking-wide text-gray-500">
+                Reported outcomes
+              </div>
+              <div className="space-y-2">
+                {institution.reportedOutcomes.length > 0 ? (
+                  institution.reportedOutcomes.map((outcome) => (
+                    <p key={outcome} className="text-sm leading-relaxed text-gray-700">
+                      {outcome}
+                    </p>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">No reported outcomes in the pilot file.</p>
+                )}
+              </div>
+            </div>
+            <div>
+              <div className="mb-2 text-xs uppercase tracking-wide text-gray-500">
+                Reported incidents
+              </div>
+              <div className="space-y-2">
+                {institution.reportedIncidents.length > 0 ? (
+                  institution.reportedIncidents.map((incident) => (
+                    <p key={incident} className="text-sm leading-relaxed text-gray-700">
+                      {incident}
+                    </p>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">No reported incidents in the pilot file.</p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="mt-5">
+          <div className="mb-2 text-xs uppercase tracking-wide text-gray-500">Institution-wide uncertainty flags</div>
+          <TagList
+            items={institution.uncertaintyFlags.filter((flag) => flag !== 'none')}
+            emptyLabel="No uncertainty flags recorded"
+          />
+        </div>
+      </Section>
+
+      <Section title="Named Activities">
+        {institution.activities.length > 0 ? (
+          <div className="space-y-4">
+            {institution.activities.map((activity) => (
+              <ActivityCard key={activity.id} activity={activity} />
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-gray-500">
+            No named activity was recorded for this institution in the current pilot file.
+          </p>
+        )}
+      </Section>
+
+      <Section title="Evidence Records">
+        {institution.evidenceRecords.length > 0 ? (
+          <div className="space-y-4">
+            {institution.evidenceRecords.map((record) => (
+              <EvidenceRecord key={record.id} record={record} />
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-gray-500">
+            No pilot evidence rows are attached to this institution yet.
+          </p>
+        )}
+      </Section>
+
+      <div className="flex flex-wrap gap-3 border-t border-gray-100 px-6 py-5">
         <Link
-          to={`/contact?action=error&institution=${encodeURIComponent(inst.name)}`}
-          className="rounded-md border border-red-300 px-4 py-2 text-sm font-medium text-red-600 transition hover:bg-red-50"
+          to={`/contact?action=error&institution=${encodeURIComponent(institution.name)}`}
+          className="rounded-xl border border-red-300 px-4 py-2 text-sm font-medium text-red-600 transition hover:bg-red-50"
         >
           Report an Error
         </Link>
         <Link
-          to={`/contact?action=add&institution=${encodeURIComponent(inst.name)}`}
-          className="rounded-md border border-[#2563eb] px-4 py-2 text-sm font-medium text-[#2563eb] transition hover:bg-blue-50"
+          to={`/contact?action=add&institution=${encodeURIComponent(institution.name)}`}
+          className="rounded-xl border border-[#2563eb] px-4 py-2 text-sm font-medium text-[#2563eb] transition hover:bg-blue-50"
         >
           Add Information
         </Link>
         <Link
-          to={`/contact?action=update&institution=${encodeURIComponent(inst.name)}`}
-          className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-50"
+          to={`/contact?action=update&institution=${encodeURIComponent(institution.name)}`}
+          className="rounded-xl border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
         >
           Suggest an Update
         </Link>
