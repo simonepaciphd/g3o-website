@@ -11,8 +11,8 @@ function Research() {
         <div className="max-w-6xl mx-auto px-4 py-12">
           <h1 className="font-serif text-4xl font-bold text-primary-900">Research</h1>
           <p className="mt-3 text-gray-600 max-w-2xl">
-            Explore G3O publications, external research using our data, and opportunities for
-            collaboration.
+            Explore current G3O publications, forthcoming external research features, and
+            collaboration opportunities.
           </p>
         </div>
       </div>
@@ -43,7 +43,7 @@ function Research() {
         <section>
           <SectionHeading
             title="External Research"
-            subtitle="Research by scholars and organizations using G3O data or contributing to our evidence base."
+            subtitle="External research showcase and collaboration opportunities using G3O data (forthcoming)."
           />
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {externalResearch.map((paper) => (
@@ -59,15 +59,14 @@ function Research() {
             ))}
           </div>
           <div className="mt-8 bg-primary-50 rounded-lg p-6 border border-primary-100">
-            <h3 className="font-semibold text-primary-900 mb-2">Call for Papers</h3>
+            <h3 className="font-semibold text-primary-900 mb-2">Call for Papers (forthcoming)</h3>
             <p className="text-gray-600 text-sm leading-relaxed">
-              We invite researchers to submit papers that use G3O data for comparative analysis of
-              government AI adoption. Early data access is available for qualified research teams.
-              Contact us at{' '}
+              We plan to open a call for papers for research using G3O data. Early collaboration
+              conversations are welcome. Contact us at{' '}
               <a href="mailto:g3o@stanford.edu" className="text-primary-600 hover:underline">
                 g3o@stanford.edu
               </a>{' '}
-              to discuss collaboration opportunities.
+              to register interest in future opportunities.
             </p>
           </div>
         </section>
@@ -99,11 +98,11 @@ function Research() {
             </div>
             {symposium.callForPapers && (
               <p className="text-sm text-accent-600 font-semibold">
-                Call for papers is open. Contact{' '}
+                Call for papers details are forthcoming. Contact{' '}
                 <a href={`mailto:${symposium.contact}`} className="underline">
                   {symposium.contact}
                 </a>{' '}
-                to express interest.
+                to register interest.
               </p>
             )}
           </div>

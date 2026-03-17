@@ -23,12 +23,11 @@
   "stats": {
     "institutions": "Institutions in Database",
     "countries": "Countries Represented",
-    "cases": "Pilot-documented Activities",
-    "outputs": "Research & Policy Outputs"
+    "cases": "Pilot-documented Activities"
   },
   "overview": {
     "title": "What is G3O?",
-    "track": "Tracks public-sector GenAI adoption across ~700,000 institutions globally",
+    "track": "Long-run scope (forthcoming): public-sector GenAI adoption across ~700,000 institutions globally",
     "document": "Documents evidence, tools, vendors, safeguards, and governance practices",
     "support": "Supports cumulative research and evidence-based policy",
     "transparency": "Promotes transparency, reproducibility, and auditability"
@@ -37,7 +36,7 @@
     "title": "Help Build the Observatory",
     "subtitle": "G3O is a collaborative effort. We rely on researchers, practitioners, and the public to help us build the most comprehensive picture of government GenAI use.",
     "submit": "Submit Data",
-    "report_missing": "Report Missing Institutions",
+    "report_missing": "Report Missing Institutions (forthcoming)",
     "report_error": "Report an Error",
     "collaborate": "Collaborate on Research"
   },

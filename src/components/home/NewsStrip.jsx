@@ -5,7 +5,7 @@ const newsItems = [
   },
   {
     date: 'February 2026',
-    text: 'Introducing G3O: working paper published on SSRN.',
+    text: 'Introducing G3O working paper now available on the site; SSRN posting forthcoming.',
   },
   {
     date: 'January 2026',

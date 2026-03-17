@@ -17,15 +17,15 @@ export const faqItems = [
   },
   {
     question: 'How can I contribute data?',
-    answer: 'We welcome contributions from researchers, practitioners, and the public. Use the "Submit Data" option on the Contact page, or reach out directly. We have structured submission guidelines to ensure data quality and consistency.',
+    answer: 'We welcome contributions from researchers, practitioners, and the public. Use the "Submit Data" option on the Contact page, or reach out directly. A structured submission workflow and guidelines are forthcoming; for now, contributions are handled by email.',
   },
   {
     question: 'How can researchers access the data?',
-    answer: 'G3O data will be available through versioned public releases and a structured API. Researchers can request early access for specific projects. See the Data Access page for details on available formats, API documentation, and access protocols.',
+    answer: 'Versioned public releases and a structured API are forthcoming. Researchers can contact us to discuss early collaboration or future access plans, and the Data Access page outlines the current roadmap.',
   },
   {
     question: 'Will the site support multiple languages?',
-    answer: 'Yes. The site is being built with internationalization (i18n) support from the ground up. We plan to add multilingual support progressively, prioritizing languages that correspond to major clusters of documented GenAI activity.',
+    answer: 'Yes. The site has been built with internationalization (i18n) support from the ground up, and additional multilingual interface support is forthcoming.',
   },
   {
     question: 'What are the limits of the current data?',

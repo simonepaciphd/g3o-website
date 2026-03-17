@@ -13,7 +13,8 @@ const cards = [
   },
   {
     title: 'Research',
-    description: 'Working papers, publications, and findings from the G3O research programme.',
+    description:
+      'Working papers, project updates, and additional publications (forthcoming) from the G3O research programme.',
     link: '/research',
     icon: (
       <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -23,7 +24,8 @@ const cards = [
   },
   {
     title: 'Policy',
-    description: 'Policy briefs and analysis for government decision-makers and stakeholders.',
+    description:
+      'Governance analysis, highlighted cases, and policy briefs (forthcoming) for public-sector decision-makers.',
     link: '/policy',
     icon: (
       <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -33,7 +35,8 @@ const cards = [
   },
   {
     title: 'Data Access',
-    description: 'Download datasets, access the API, and learn about our data collection methodology.',
+    description:
+      'Dataset downloads and API access (forthcoming), plus notes on our data collection methodology.',
     link: '/data-access',
     icon: (
       <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>

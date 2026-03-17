@@ -18,8 +18,8 @@ function DataAccess() {
             Data Access &amp; Transparency
           </h1>
           <p className="mt-3 text-gray-600 max-w-2xl">
-            How to access G3O data, our collection methodology, and our commitments to openness
-            and reproducibility.
+            How we plan to provide access to G3O data, the collection methodology behind the
+            project, and the transparency features that are being built out over time.
           </p>
         </div>
       </div>
@@ -29,24 +29,24 @@ function DataAccess() {
         <section>
           <SectionHeading
             title="Access the Data"
-            subtitle="G3O data is designed to be open, versioned, and easy to use."
+            subtitle="Public downloads, API access, and versioned releases are forthcoming."
           />
           <div className="grid md:grid-cols-3 gap-6">
             {[
               {
-                heading: 'Download',
-                text: 'Download versioned snapshots of the full dataset in CSV, JSON, or Parquet formats.',
-                cta: 'Coming soon',
+                heading: 'Download (forthcoming)',
+                text: 'Public dataset downloads in CSV, JSON, and Parquet formats are forthcoming.',
+                cta: 'Forthcoming',
               },
               {
-                heading: 'API',
-                text: 'Programmatic access via a RESTful API with structured queries by country, institution, and deployment type.',
-                cta: 'See below',
+                heading: 'API (forthcoming)',
+                text: 'Public programmatic access via a structured REST API is forthcoming.',
+                cta: 'Forthcoming',
               },
               {
-                heading: 'Versioned Releases',
-                text: 'Each data release is versioned with a full changelog, ensuring reproducibility and longitudinal analysis.',
-                cta: 'View releases',
+                heading: 'Versioned Releases (forthcoming)',
+                text: 'Public dataset releases and changelogs are forthcoming as the release workflow is finalized.',
+                cta: 'Forthcoming',
               },
             ].map((item) => (
               <div key={item.heading} className="bg-white border border-gray-200 rounded-lg p-6">
@@ -63,13 +63,13 @@ function DataAccess() {
         {/* API Access */}
         <section>
           <SectionHeading
-            title="API Access"
-            subtitle="Query the G3O dataset programmatically using our RESTful API."
+            title="API Access (forthcoming)"
+            subtitle="We plan to offer programmatic access via a public REST API."
           />
           <div className="space-y-6">
             <div>
               <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
-                Example Endpoints
+                Planned Endpoints (forthcoming)
               </h3>
               <CodeBlock>{`GET /api/v1/institutions
 GET /api/v1/institutions/{id}
@@ -78,7 +78,7 @@ GET /api/v1/search?q=chatbot&country=US`}</CodeBlock>
             </div>
             <div>
               <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
-                Example Response
+                Illustrative Response Shape (forthcoming)
               </h3>
               <CodeBlock>{`{
   "data": [
@@ -114,7 +114,8 @@ GET /api/v1/search?q=chatbot&country=US`}</CodeBlock>
             </div>
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
               <p className="text-amber-800 text-sm font-medium">
-                API documentation coming soon. Contact us for early access.
+                Public API documentation and access are forthcoming. Contact us to register
+                interest.
               </p>
             </div>
           </div>
@@ -171,22 +172,22 @@ GET /api/v1/search?q=chatbot&country=US`}</CodeBlock>
         {/* Provenance & Reproducibility */}
         <section>
           <SectionHeading
-            title="Provenance & Reproducibility"
-            subtitle="Every data point is traceable back to its source."
+            title="Provenance & Reproducibility (forthcoming)"
+            subtitle="The dashboard already surfaces source context, and fuller public export and lineage tooling are forthcoming."
           />
           <div className="grid md:grid-cols-3 gap-6">
             {[
               {
                 heading: 'Record-Level Sources',
-                text: 'Each observation links to the original URL, document, or survey response from which it was derived.',
+                text: 'Institution profiles already surface source context, and broader public provenance exports are forthcoming.',
               },
               {
-                heading: 'Versioned Datasets',
-                text: 'Immutable snapshots with semantic versioning. All changes documented in changelogs with diffs.',
+                heading: 'Versioned Datasets (forthcoming)',
+                text: 'Immutable public snapshots with semantic versioning and changelogs are forthcoming.',
               },
               {
-                heading: 'Data Lineage',
-                text: 'Full pipeline metadata: extraction model version, query parameters, validation timestamp, and reviewer notes.',
+                heading: 'Data Lineage (forthcoming)',
+                text: 'Expanded pipeline metadata, including extraction and validation context, is forthcoming.',
               },
             ].map((item) => (
               <div key={item.heading} className="border border-gray-200 rounded-lg p-6">
@@ -199,12 +200,12 @@ GET /api/v1/search?q=chatbot&country=US`}</CodeBlock>
 
         {/* Transparency Commitments */}
         <section>
-          <SectionHeading title="Transparency Commitments" />
+          <SectionHeading title="Transparency Commitments (forthcoming implementation)" />
           <div className="bg-primary-50 rounded-xl p-8 border border-primary-100">
             <ul className="space-y-4">
               {[
-                ['Open Data', 'All datasets released under open licenses enabling reuse and redistribution.'],
-                ['Methodology Disclosure', 'Full documentation of collection methods, models used, and validation procedures.'],
+                ['Open Data (forthcoming)', 'Public dataset releases are being prepared to support reuse and independent verification.'],
+                ['Methodology Disclosure (expanding; forthcoming)', 'Public-facing methods documentation is being expanded as the release workflow matures.'],
                 ['Limitation Acknowledgment', 'Transparent reporting of known gaps, biases, and coverage limitations.'],
               ].map(([title, text]) => (
                 <li key={title} className="flex items-start gap-3">

@@ -1,7 +1,5 @@
 import pilotDashboardData from './pilotDashboardData.json';
 
-const RESEARCH_POLICY_OUTPUT_COUNT = 34;
-
 function normalizeCountryKey(value) {
   return String(value || '')
     .normalize('NFKD')
@@ -107,7 +105,6 @@ export const homeStats = {
   institutions: institutions.length,
   countries: fullDatabaseCountries.size,
   cases: pilotDashboardData.meta.activityCount,
-  outputs: RESEARCH_POLICY_OUTPUT_COUNT,
 };
 
 export const dashboardOverview = {

@@ -90,12 +90,12 @@ function About() {
           <SectionHeading title="Scope" />
           <div className="bg-gray-50 rounded-xl p-8 border border-gray-200">
             <p className="text-4xl font-bold font-serif text-primary-800 mb-2">~700,000</p>
-            <p className="text-gray-600 mb-4">public institutions in scope</p>
+            <p className="text-gray-600 mb-4">public institutions in long-run scope (forthcoming in phases)</p>
             <p className="text-gray-700 leading-relaxed max-w-4xl">
               G3O's ambition spans national and subnational levels of government — including
               parliaments, courts, ministries, agencies, regulatory bodies, and local authorities.
               Our phased data collection strategy begins with national-level institutions across
-              all countries and progressively expands to subnational coverage.
+              all countries and progressively expands to subnational coverage over time.
             </p>
           </div>
         </section>
@@ -106,16 +106,16 @@ function About() {
           <div className="grid md:grid-cols-3 gap-6">
             {[
               {
-                heading: 'Open Data',
-                text: 'All data will be publicly available under open licenses, enabling independent verification and reuse.',
+                heading: 'Open Data (forthcoming)',
+                text: 'Public data releases are being prepared to support independent verification and reuse.',
               },
               {
-                heading: 'Versioned Releases',
-                text: 'Datasets are released in versioned snapshots with full changelogs, ensuring reproducibility over time.',
+                heading: 'Versioned Releases (forthcoming)',
+                text: 'Public dataset snapshots and changelogs are forthcoming as the release workflow is finalized.',
               },
               {
-                heading: 'Record-Level Provenance',
-                text: 'Every data point links back to its original source, extraction method, and confidence score.',
+                heading: 'Record-Level Provenance (expanding; forthcoming)',
+                text: 'Institution profiles already surface source context, and broader public provenance exports are forthcoming.',
               },
             ].map((item) => (
               <div key={item.heading} className="border border-gray-200 rounded-lg p-6">
@@ -141,8 +141,8 @@ function About() {
                 Research &rarr;
               </h3>
               <p className="text-gray-600 text-sm leading-relaxed">
-                Explore G3O working papers, methods documentation, and opportunities to collaborate
-                on research using our data.
+                Explore the current working paper, project updates, and additional methods
+                documentation (forthcoming).
               </p>
             </Link>
             <Link
@@ -153,8 +153,8 @@ function About() {
                 Policy &rarr;
               </h3>
               <p className="text-gray-600 text-sm leading-relaxed">
-                Best practices, highlighted cases, and model legislation for government GenAI
-                transparency and governance.
+                Best practices, highlighted cases, model legislation, and policy briefs
+                (forthcoming) for government GenAI transparency and governance.
               </p>
             </Link>
           </div>

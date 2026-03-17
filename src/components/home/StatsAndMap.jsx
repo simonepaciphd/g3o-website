@@ -44,7 +44,6 @@ const statItems = [
   { key: 'institutions', label: 'Institutions' },
   { key: 'countries', label: 'Countries' },
   { key: 'cases', label: 'Cases' },
-  { key: 'outputs', label: 'Outputs' },
 ];
 
 function StatPill({ statKey }) {

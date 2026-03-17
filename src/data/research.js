@@ -34,20 +34,21 @@ export const internalResearch = [
 export const externalResearch = [
   {
     id: 'ext-placeholder-1',
-    title: 'Your Research Here',
+    title: 'External Research Showcase (forthcoming)',
     authors: 'Open invitation to researchers',
     date: null,
-    type: 'Call for Papers',
-    abstract: 'G3O invites researchers to use our data for comparative studies of government AI adoption. Early data access is available for qualified research teams.',
+    type: 'External Research',
+    abstract: 'We plan to feature research by scholars and organizations using G3O data. Collaboration conversations and expressions of interest are welcome.',
+    status: 'Forthcoming',
     link: null,
   },
 ];
 
 export const symposium = {
-  title: 'G3O Research Symposium: First Wave of Global Data',
-  description: 'We are organizing an inaugural symposium for researchers using the first wave of G3O global data collection. The symposium will bring together scholars working on government AI adoption, digital governance, and technology policy to present findings, compare methodologies, and set a coordinated research agenda.',
-  date: 'Fall 2026 (exact date TBA)',
-  location: 'TBA — hybrid format planned',
+  title: 'G3O Research Symposium (forthcoming): First Wave of Global Data',
+  description: 'We are planning an inaugural symposium for researchers using the first wave of G3O global data collection. Details on format, timing, and participation are forthcoming.',
+  date: 'Fall 2026 (forthcoming)',
+  location: 'Format and location (forthcoming)',
   callForPapers: true,
   contact: 'g3o@stanford.edu',
 };

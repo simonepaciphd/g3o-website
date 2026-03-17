@@ -36,7 +36,6 @@ const statItems = [
   { key: 'institutions', icon: '\uD83C\uDFDB\uFE0F' },
   { key: 'countries', icon: '\uD83C\uDF0D' },
   { key: 'cases', icon: '\uD83D\uDCC4' },
-  { key: 'outputs', icon: '\uD83D\uDCDA' },
 ];
 
 function StatCard({ statKey, icon }) {
@@ -64,7 +63,7 @@ function StatCounters() {
   return (
     <section className="py-16 bg-gray-50">
       <div className="max-w-6xl mx-auto px-6">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {statItems.map((item) => (
             <StatCard key={item.key} statKey={item.key} icon={item.icon} />
           ))}
