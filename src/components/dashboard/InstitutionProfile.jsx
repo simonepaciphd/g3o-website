@@ -22,11 +22,6 @@ const evidenceRecordLabels = {
   ambiguous: 'Ambiguous',
 };
 
-const baselineDatasetLabels = {
-  cross_country_legislative_national_ipu: 'IPU parliamentary baseline',
-  cross_country_judicial_national_wiki: 'Judicial baseline reference',
-};
-
 function Badge({ label, className }) {
   return (
     <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-medium ${className}`}>
@@ -72,14 +67,6 @@ function TagList({ items, emptyLabel = 'No entries recorded' }) {
   );
 }
 
-function formatBaselineDataset(value) {
-  if (!value) {
-    return '\u2014';
-  }
-
-  return baselineDatasetLabels[value] || value.replace(/_/g, ' ');
-}
-
 function Placeholder({ overview }) {
   return (
     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
@@ -87,8 +74,7 @@ function Placeholder({ overview }) {
         <h2 className="font-serif text-2xl font-semibold">Explore the pilot evidence</h2>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-blue-50/90">
           Select an institution from the navigator to review preliminary evidence on government
-          use of generative AI, together with the current institutional baseline merged from other
-          cross-country sources.
+          use of generative AI in the current public release.
         </p>
       </div>
 
@@ -125,14 +111,11 @@ function Placeholder({ overview }) {
           </p>
         </div>
         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-          <div className="text-xs uppercase tracking-[0.18em] text-slate-500">
-            Existing-source baseline
-          </div>
+          <div className="text-xs uppercase tracking-[0.18em] text-slate-500">Current release</div>
           <p className="mt-2 text-sm leading-relaxed text-slate-800">
-            {overview.existingSourceLinkedInstitutions} institutions are currently linked to an
-            existing-source baseline, with {overview.matchedPilotAndExistingSourceInstitutions}
+            {overview.totalInstitutions} institutions are currently visible across
             {' '}
-            already matched to pilot-reviewed records.
+            {overview.totalCountries} countries.
           </p>
         </div>
       </div>
@@ -275,7 +258,7 @@ function InstitutionProfile({ institution, overview }) {
       <div className="grid gap-4 px-6 py-5 sm:grid-cols-2 xl:grid-cols-4">
         <MetaItem label="Country" value={institution.country} />
         <MetaItem label="Government tier" value={institution.levelLabel} />
-        <MetaItem label="Branch" value={institution.branchLabel} />
+        <MetaItem label="Agency / branch" value={institution.branchLabel} />
         <MetaItem label="Region or locality" value={institution.regionLabel} />
         <MetaItem label="Activities" value={String(institution.activityCount)} />
         <MetaItem label="Source rows" value={String(institution.sourceCount)} />
@@ -303,6 +286,7 @@ function InstitutionProfile({ institution, overview }) {
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           <MetaItem label="Evidence status" value={institution.evidenceLabel} />
           <MetaItem label="Coverage source" value={institution.recordOriginLabel} />
+          <MetaItem label="Agency / branch" value={institution.branchLabel} />
           <MetaItem label="Institution type" value={institution.institutionType || '\u2014'} />
           <MetaItem label="Adoption stages" value={formatList(institution.adoptionStages)} />
           <MetaItem label="Years announced" value={formatList(institution.yearAnnounced)} />
@@ -310,40 +294,17 @@ function InstitutionProfile({ institution, overview }) {
         </div>
       </Section>
 
-      {institution.masterRecord && (
-        <Section title="Existing-source Baseline">
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-            <MetaItem label="Institution type" value={institution.masterRecord.institutionTypeLabel || '\u2014'} />
-            <MetaItem label="Website" value={institution.masterRecord.website || '\u2014'} />
-            <MetaItem label="Baseline dataset" value={formatBaselineDataset(institution.masterRecord.sourceDatasetId)} />
-            <MetaItem label="Retrieval date" value={institution.masterRecord.retrievalDate || '\u2014'} />
-            <MetaItem label="Source file" value={institution.masterRecord.sourceFile || '\u2014'} />
-          </div>
-
-          {institution.masterRecord.notes?.length > 0 && (
-            <div className="mt-5">
-              <div className="mb-2 text-xs uppercase tracking-wide text-gray-500">Baseline notes</div>
-              <div className="space-y-2">
-                {institution.masterRecord.notes.map((note) => (
-                  <p key={note} className="text-sm leading-relaxed text-gray-700">
-                    {note}
-                  </p>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {institution.masterRecord.website && (
-            <a
-              href={institution.masterRecord.website}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-4 inline-block text-sm font-medium text-[#2563eb] hover:underline"
-            >
-              Visit institution website
-            </a>
-          )}
-        </Section>
+      {institution.website && (
+        <section className="border-t border-gray-100 px-6 py-5">
+          <a
+            href={institution.website}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block text-sm font-medium text-[#2563eb] hover:underline"
+          >
+            Visit institution website
+          </a>
+        </section>
       )}
 
       <Section title="Tools And Vendors">

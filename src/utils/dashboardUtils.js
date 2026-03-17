@@ -1,5 +1,5 @@
 const LEVEL_ORDER = ['national', 'subnational', 'unknown'];
-const BRANCH_ORDER = ['executive', 'legislative', 'judicial', 'unknown'];
+const BRANCH_ORDER = ['executive', 'agency', 'legislative', 'judicial', 'unknown'];
 const collator = new Intl.Collator('en', { sensitivity: 'base' });
 
 function compareByOrder(left, right, order) {

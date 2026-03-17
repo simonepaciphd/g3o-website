@@ -30,9 +30,10 @@ const LEVEL_LABELS = {
 
 const BRANCH_LABELS = {
   executive: 'Executive',
+  agency: 'Agency',
   legislative: 'Legislative',
   judicial: 'Judicial',
-  unknown: 'Unknown branch',
+  unknown: 'Agency',
 };
 
 const EVIDENCE_LABELS = {
@@ -49,6 +50,70 @@ const ORIGIN_LABELS = {
 };
 
 const CONFIDENCE_ORDER = ['low', 'medium', 'high'];
+
+const COUNTRY_CANONICAL_NAMES = new Map([
+  ['bolivia plurinational state', 'Bolivia'],
+  ['bosnia and herzegovina', 'Bosnia and Herzegovina'],
+  ['bosnia herzegovina', 'Bosnia and Herzegovina'],
+  ['cabo verde', 'Cabo Verde'],
+  ['cape verde', 'Cabo Verde'],
+  ['congo democratic republic', 'Democratic Republic of Congo'],
+  ['congo republic', 'Congo'],
+  ['cote divoire', "Cote d'Ivoire"],
+  ['czech republic', 'Czech Republic'],
+  ['czechia', 'Czech Republic'],
+  ['democratic peoples republic korea', 'North Korea'],
+  ['democratic republic congo', 'Democratic Republic of Congo'],
+  ['democratic republic of congo', 'Democratic Republic of Congo'],
+  ['ivory coast', "Cote d'Ivoire"],
+  ['korea north', 'North Korea'],
+  ['republic korea', 'South Korea'],
+  ['republic moldova', 'Moldova'],
+  ['syrian arab republic', 'Syria'],
+  ['turkey', 'Turkey'],
+  ['turkiye', 'Turkey'],
+  ['united republic tanzania', 'Tanzania'],
+  ['united states america', 'United States'],
+  ['united states of america', 'United States'],
+  ['viet nam', 'Vietnam'],
+]);
+
+const AGENCY_PATTERNS = [
+  /\bagency\b/i,
+  /\bauthority\b/i,
+  /\bboard\b/i,
+  /\bbureau\b/i,
+  /\bcentre\b/i,
+  /\bcenter\b/i,
+  /\bcommission\b/i,
+  /\bcouncil\b/i,
+  /\bdata bureau\b/i,
+  /\bdigital\b/i,
+  /\bdirectorate\b/i,
+  /\binstitute\b/i,
+  /\bmagistrat\b/i,
+  /\boffice\b/i,
+  /\brevenue\b/i,
+  /\bsecretariat\b/i,
+  /\bservice\b/i,
+  /\bstatistics\b/i,
+];
+
+const EXECUTIVE_BODY_PATTERNS = [
+  /\balcald[ií]a\b/i,
+  /\bcity\b/i,
+  /\bcounty\b/i,
+  /\bdistrict\b/i,
+  /\bgobierno\b/i,
+  /\bgovernment\b/i,
+  /\bministry\b/i,
+  /\bmunicipal\b/i,
+  /\bmunicipality\b/i,
+  /\bprefecture\b/i,
+  /\bprefeitura\b/i,
+  /\bprovince\b/i,
+  /\bstate\b/i,
+];
 
 const COUNTRY_ALIASES = {
   'Bolivia (Plurinational State of)': 'Bolivia',
@@ -98,12 +163,100 @@ function parseCsvLine(line) {
   return fields;
 }
 
+function legacyMojibakeScore(value) {
+  return ['Ã', 'Â', 'â€', 'â€™', 'â€œ', 'â€', 'â€¦', '\ufffd'].reduce(
+    (score, marker) => score + (value.split(marker).length - 1),
+    0,
+  );
+}
+
+function legacyRepairMojibake(value) {
+  if (!value || legacyMojibakeScore(value) === 0) {
+    return value;
+  }
+
+  const candidates = [value];
+
+  try {
+    candidates.push(Buffer.from(value, 'latin1').toString('utf8'));
+  } catch {}
+
+  let cleaned = value;
+  const replacements = new Map([
+    ['\u00e2\u20ac\u0153', '"'],
+    ['\u00e2\u20ac\u009d', '"'],
+    ['\u00e2\u20ac\u2122', "'"],
+    ['\u00e2\u20ac\u201c', '-'],
+    ['\u00e2\u20ac\u201d', '-'],
+    ['\u00e2\u20ac\u00a6', '...'],
+  ]);
+
+  for (const [bad, good] of replacements) {
+    cleaned = cleaned.replaceAll(bad, good);
+  }
+
+  candidates.push(cleaned);
+
+  return candidates.sort((left, right) => legacyMojibakeScore(left) - legacyMojibakeScore(right))[0];
+}
+
+function mojibakeScore(value) {
+  return ['\u00c2', '\u00c3', '\u00e2\u20ac', '\ufffd'].reduce(
+    (score, marker) => score + (value.split(marker).length - 1),
+    0,
+  );
+}
+
+function legacyRepairMojibakeSimple(value) {
+  if (!value || mojibakeScore(value) === 0) {
+    return value;
+  }
+
+  const candidates = [value];
+
+  try {
+    candidates.push(Buffer.from(value, 'latin1').toString('utf8'));
+  } catch {}
+
+  return candidates.sort((left, right) => mojibakeScore(left) - mojibakeScore(right))[0];
+}
+
+function repairMojibake(value) {
+  if (!value || mojibakeScore(value) === 0) {
+    return value;
+  }
+
+  const candidates = [value];
+
+  try {
+    candidates.push(Buffer.from(value, 'latin1').toString('utf8'));
+  } catch {}
+
+  let cleaned = value;
+  const replacements = new Map([
+    ['\u00e2\u20ac\u0153', '"'],
+    ['\u00e2\u20ac\u009d', '"'],
+    ['\u00e2\u20ac\u2122', "'"],
+    ['\u00e2\u20ac\u201c', '-'],
+    ['\u00e2\u20ac\u201d', '-'],
+    ['\u00e2\u20ac\u00a6', '...'],
+  ]);
+
+  for (const [bad, good] of replacements) {
+    cleaned = cleaned.replaceAll(bad, good);
+  }
+
+  candidates.push(cleaned);
+
+  return candidates.sort((left, right) => mojibakeScore(left) - mojibakeScore(right))[0];
+}
+
 function cleanCell(value) {
   if (value == null) {
     return '';
   }
 
-  const trimmed = String(value).trim();
+  const trimmed = repairMojibake(String(value)).trim();
 
   if (!trimmed || trimmed === '_NA_') {
     return '';
@@ -119,7 +272,8 @@ function normalizeOptionalValue(value) {
 
 function canonicalizeCountry(value) {
   const cleaned = cleanCell(value);
-  return COUNTRY_ALIASES[cleaned] || cleaned;
+  const normalized = normalizeForKey(cleaned);
+  return COUNTRY_CANONICAL_NAMES.get(normalized) || COUNTRY_ALIASES[cleaned] || cleaned;
 }
 
 function dedupe(values) {
@@ -192,9 +346,44 @@ function normalizeLevel(value) {
 
 function normalizeBranch(value) {
   const normalized = cleanCell(value).toLowerCase();
-  return normalized === 'executive' || normalized === 'legislative' || normalized === 'judicial'
+  return normalized === 'executive' ||
+    normalized === 'agency' ||
+    normalized === 'legislative' ||
+    normalized === 'judicial'
     ? normalized
     : 'unknown';
+}
+
+function looksLikeAgency(...values) {
+  const text = cleanCell(values.filter(Boolean).join(' '));
+  return AGENCY_PATTERNS.some((pattern) => pattern.test(text));
+}
+
+function looksLikeExecutiveBody(...values) {
+  const text = cleanCell(values.filter(Boolean).join(' '));
+  return EXECUTIVE_BODY_PATTERNS.some((pattern) => pattern.test(text));
+}
+
+function resolveBranchKey(branchValue, institutionName, institutionSummary = '') {
+  const explicitBranch = normalizeBranch(branchValue);
+
+  if (explicitBranch === 'legislative' || explicitBranch === 'judicial') {
+    return explicitBranch;
+  }
+
+  if (looksLikeAgency(institutionName, institutionSummary)) {
+    return 'agency';
+  }
+
+  if (explicitBranch === 'executive') {
+    return 'executive';
+  }
+
+  if (looksLikeExecutiveBody(institutionName, institutionSummary)) {
+    return 'executive';
+  }
+
+  return 'agency';
 }
 
 function normalizeEvidence(value) {
@@ -244,6 +433,22 @@ function cleanRegionLabel(value) {
     .trim();
 }
 
+function cleanRegionCapture(value) {
+  const cleaned = cleanRegionLabel(value);
+  const hyphenMatch = cleaned.match(/^(.+?)\s+-\s+(.+)$/);
+
+  if (!hyphenMatch) {
+    return cleaned;
+  }
+
+  const [, head, tail] = hyphenMatch;
+  if (/(agency|authority|bureau|city|council|department|digital|directorate|government|office|secretariat|service)$/i.test(tail)) {
+    return head.trim();
+  }
+
+  return cleaned;
+}
+
 function inferRegion(institutionName, level) {
   if (level === 'national') {
     return { label: 'National', kind: 'national' };
@@ -255,11 +460,11 @@ function inferRegion(institutionName, level) {
     .trim();
 
   const matchers = [
-    { pattern: /Gobierno de la Provincia de ([^,;]+)/i, format: ([match]) => cleanRegionLabel(match) },
-    { pattern: /Province of ([^,;]+)/i, format: ([match]) => cleanRegionLabel(match) },
-    { pattern: /Provincia de ([^,;]+)/i, format: ([match]) => cleanRegionLabel(match) },
-    { pattern: /State of ([^,;]+)/i, format: ([match]) => cleanRegionLabel(match) },
-    { pattern: /Province de ([^,;]+)/i, format: ([match]) => cleanRegionLabel(match) },
+    { pattern: /Gobierno de la Provincia de ([^,;]+)/i, format: ([match]) => cleanRegionCapture(match) },
+    { pattern: /Province of ([^,;]+)/i, format: ([match]) => cleanRegionCapture(match) },
+    { pattern: /Provincia de ([^,;]+)/i, format: ([match]) => cleanRegionCapture(match) },
+    { pattern: /State of ([^,;]+)/i, format: ([match]) => cleanRegionCapture(match) },
+    { pattern: /Province de ([^,;]+)/i, format: ([match]) => cleanRegionCapture(match) },
     {
       pattern: /([A-Z][A-Za-z'.& -]+?) Metropolitan City\b/,
       format: ([match]) => `${cleanRegionLabel(match)} Metropolitan City`,
@@ -290,15 +495,15 @@ function inferRegion(institutionName, level) {
     },
     {
       pattern: /Municipality of ([^,;]+)/i,
-      format: ([match]) => cleanRegionLabel(match),
+      format: ([match]) => cleanRegionCapture(match),
     },
     {
       pattern: /City of ([^,;]+)/i,
-      format: ([match]) => `${cleanRegionLabel(match)} City`,
+      format: ([match]) => `${cleanRegionCapture(match)} City`,
     },
     {
       pattern: /Gobierno de la Ciudad de ([^,;]+)/i,
-      format: ([match]) => cleanRegionLabel(match),
+      format: ([match]) => cleanRegionCapture(match),
     },
     {
       pattern: /([A-Z][A-Za-z'.& -]+?) High Court\b/,
@@ -374,6 +579,7 @@ function buildMasterRecords() {
 
   for (const row of rows) {
     const key = createInstitutionKey(row.country, row.institution_name);
+    const branchKey = resolveBranchKey(row.branch, row.institution_name, row.notes);
 
     if (!masterRecords.has(key)) {
       masterRecords.set(key, {
@@ -383,8 +589,8 @@ function buildMasterRecords() {
         country: row.country,
         levelKey: normalizeLevel(row.government_level),
         levelLabel: LEVEL_LABELS[normalizeLevel(row.government_level)],
-        branchKey: normalizeBranch(row.branch),
-        branchLabel: BRANCH_LABELS[normalizeBranch(row.branch)],
+        branchKey,
+        branchLabel: BRANCH_LABELS[branchKey],
         institutionType: normalizeOptionalValue(row.institution_type),
         institutionTypeLabel: normalizeOptionalValue(row.institution_type)
           ? titleCase(row.institution_type)
@@ -433,7 +639,10 @@ function applyMasterRecord(institution, masterRecord) {
     institution.levelLabel = masterRecord.levelLabel;
   }
 
-  if (institution.branchKey === 'unknown' && masterRecord.branchKey !== 'unknown') {
+  if (
+    (institution.branchKey === 'unknown' || institution.branchKey === 'agency') &&
+    masterRecord.branchKey !== 'unknown'
+  ) {
     institution.branchKey = masterRecord.branchKey;
     institution.branchLabel = masterRecord.branchLabel;
   }
@@ -450,7 +659,11 @@ function applyMasterRecord(institution, masterRecord) {
 function buildPilotInstitution(institutionId, rows, masterRecord) {
   const firstRow = rows[0];
   const levelKey = normalizeLevel(firstRow.level_of_government);
-  const branchKey = normalizeBranch(firstRow.branch_of_government);
+  const branchKey = resolveBranchKey(
+    firstRow.branch_of_government,
+    firstRow.institution_name,
+    firstRow.institution_summary,
+  );
   const region = inferRegion(firstRow.institution_name, levelKey);
 
   const evidenceValues = rows.map((row) => normalizeEvidence(row.has_genai_activity));
@@ -614,7 +827,7 @@ function buildMasterOnlyInstitution(masterRecord) {
     regionKind: region.kind,
     hasGenaiActivity: 'not_reviewed',
     evidenceLabel: EVIDENCE_LABELS.not_reviewed,
-    summary: `${masterRecord.name} is currently included from master_institutions.csv as a structural baseline record. The pilot evidence backend does not yet contain a reviewed row for this institution.`,
+    summary: `${masterRecord.name} is currently included from master_institutions.csv as a structure-reference record. The pilot evidence backend does not yet contain a reviewed row for this institution.`,
     searchLanguages: [],
     tools: [],
     vendors: [],
@@ -661,7 +874,7 @@ function buildMasterOnlyInstitution(masterRecord) {
 
 function sortInstitutions(institutions) {
   const levelOrder = ['national', 'subnational', 'unknown'];
-  const branchOrder = ['executive', 'legislative', 'judicial', 'unknown'];
+  const branchOrder = ['executive', 'agency', 'legislative', 'judicial', 'unknown'];
   const evidenceOrder = ['yes', 'unclear', 'no', 'not_reviewed'];
 
   return institutions.sort((left, right) => {
@@ -714,6 +927,7 @@ function collectMetaCounts(institutions) {
     },
     branchCounts: {
       executive: 0,
+      agency: 0,
       legislative: 0,
       judicial: 0,
       unknown: 0,

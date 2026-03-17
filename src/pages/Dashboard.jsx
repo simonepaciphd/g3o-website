@@ -12,7 +12,7 @@ const institutionIndex = new Map(
 const statCards = [
   {
     label: 'Countries represented',
-    description: 'Across the merged pilot and existing-source release',
+    description: 'Across the current public release',
     value: dashboardOverview.totalCountries,
   },
   {
@@ -27,7 +27,7 @@ const statCards = [
   },
   {
     label: 'Pilot-added institutions',
-    description: 'Institutions not yet matched to the current existing-source baseline',
+    description: 'Institutions not yet matched to the current structure reference file',
     value: dashboardOverview.pilotAddedInstitutions,
   },
 ];
@@ -51,14 +51,13 @@ function Dashboard() {
             <h1 className="font-serif text-3xl font-bold text-[#1e3a5f]">Pilot Institution Dashboard</h1>
             <p className="mt-3 text-sm leading-relaxed text-gray-600">
               This public dashboard offers a preliminary look at how G3O is documenting
-              government use of generative AI. It combines reviewed pilot evidence with a current
-              institutional baseline from other cross-country sources, and should be read as an
-              early research release rather than a complete census.
+              government use of generative AI, and should be read as an early research release
+              rather than a complete census.
             </p>
             <p className="mt-3 text-sm leading-relaxed text-gray-600">
-              Institutions are organized by country, tier of government, branch, and region or
-              locality where available. The pilot is already surfacing many institutions and
-              documented activities that are not yet captured in the current baseline sources.
+              Institutions are organized by country, tier of government, agency or branch, and
+              region or locality where available. The pilot is already surfacing many institutions
+              and documented activities that are not yet matched to the current structure file.
             </p>
             <p className="mt-3 text-xs uppercase tracking-[0.18em] text-gray-400">
               Generated {new Date(pilotDashboardData.generatedAt).toLocaleString()}
@@ -99,7 +98,7 @@ function Dashboard() {
                 {dashboardOverview.pilotAddedInstitutions} institutions in
                 {' '}
                 {dashboardOverview.pilotAddedCountries} countries that are not yet matched to the
-                current existing-source baseline.
+                current structure reference file.
               </p>
               <p className="mt-2 leading-relaxed">
                 That includes {dashboardOverview.pilotAddedDocumentedActivityInstitutions}
@@ -112,15 +111,12 @@ function Dashboard() {
 
             <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-800">
               <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-                Existing-source baseline
+                Current release
               </div>
               <p className="mt-2 leading-relaxed">
-                Current baseline sources link {dashboardOverview.existingSourceLinkedInstitutions}
+                The public release currently includes {dashboardOverview.totalInstitutions}
                 {' '}
-                institutions across {dashboardOverview.existingSourceCountries} countries, with
-                {' '}
-                {dashboardOverview.matchedPilotAndExistingSourceInstitutions} already matched to
-                pilot-reviewed institutions.
+                institutions across {dashboardOverview.totalCountries} countries.
               </p>
               <p className="mt-2 leading-relaxed">
                 The public release currently includes

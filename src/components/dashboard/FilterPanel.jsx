@@ -13,8 +13,8 @@ const originOptions = [
   { value: 'all', label: 'All coverage sources' },
   { value: 'pilot_reviewed', label: 'Pilot-reviewed institutions' },
   { value: 'pilot_added', label: 'Pilot-added institutions' },
-  { value: 'existing_source_linked', label: 'Existing-source linked institutions' },
-  { value: 'existing_source_only', label: 'Existing-source baseline only' },
+  { value: 'existing_source_linked', label: 'Linked to structure file' },
+  { value: 'existing_source_only', label: 'Structure-only institutions' },
 ];
 
 const evidenceBadgeClasses = {
@@ -241,7 +241,7 @@ function FilterPanel({ institutions, selectedInstitutionId, onInstitutionSelect 
       <div className="border-b border-gray-100 bg-gradient-to-br from-[#1e3a5f] to-[#2563eb] px-5 py-5 text-white">
         <h2 className="font-serif text-xl font-semibold">Institution Navigator</h2>
         <p className="mt-1 text-sm text-blue-50/90">
-          Browse the current public release by country, government tier, branch, and region or locality.
+          Browse the current public release by country, government tier, agency or branch, and region or locality.
         </p>
       </div>
 

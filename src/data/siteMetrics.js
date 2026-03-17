@@ -14,6 +14,8 @@ function normalizeCountryKey(value) {
 
 const COUNTRY_ALIASES = new Map([
   ['united states america', 'united states'],
+  ['united states of america', 'united states'],
+  ['turkiye', 'turkey'],
   ['democratic republic congo', 'democratic republic of congo'],
   ['republic congo', 'congo'],
   ['czechia', 'czech republic'],
@@ -35,6 +37,10 @@ function resolveCountryKey(value) {
   return COUNTRY_ALIASES.get(key) || key;
 }
 
+function createResolvedCountrySet(values) {
+  return new Set(values.map((value) => resolveCountryKey(value)));
+}
+
 const institutions = pilotDashboardData.institutions;
 const pilotReviewedInstitutions = institutions.filter((institution) => institution.recordOrigin !== 'master');
 const pilotAddedInstitutions = institutions.filter((institution) => institution.recordOrigin === 'pilot');
@@ -46,13 +52,19 @@ const pilotAddedDocumentedActivityInstitutions = pilotAddedInstitutions.filter(
   (institution) => institution.hasGenaiActivity === 'yes',
 );
 
-const fullDatabaseCountries = new Set(institutions.map((institution) => institution.country));
-const pilotCountries = new Set(pilotReviewedInstitutions.map((institution) => institution.country));
-const existingSourceCountries = new Set(
+const fullDatabaseCountries = createResolvedCountrySet(
+  institutions.map((institution) => institution.country),
+);
+const pilotCountries = createResolvedCountrySet(
+  pilotReviewedInstitutions.map((institution) => institution.country),
+);
+const existingSourceCountries = createResolvedCountrySet(
   existingSourceLinkedInstitutions.map((institution) => institution.country),
 );
-const pilotAddedCountries = new Set(pilotAddedInstitutions.map((institution) => institution.country));
-const pilotAddedDocumentedActivityCountries = new Set(
+const pilotAddedCountries = createResolvedCountrySet(
+  pilotAddedInstitutions.map((institution) => institution.country),
+);
+const pilotAddedDocumentedActivityCountries = createResolvedCountrySet(
   pilotAddedDocumentedActivityInstitutions.map((institution) => institution.country),
 );
 
@@ -121,7 +133,7 @@ export const dashboardOverview = {
   ).length,
   documentedActivityInstitutions: documentedActivityInstitutions.length,
   documentedActivityCountries: new Set(
-    documentedActivityInstitutions.map((institution) => institution.country),
+    documentedActivityInstitutions.map((institution) => resolveCountryKey(institution.country)),
   ).size,
   namedActivities: pilotDashboardData.meta.activityCount,
   pilotAddedDocumentedActivityInstitutions: pilotAddedDocumentedActivityInstitutions.length,
