@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import SectionHeading from '../components/common/SectionHeading';
 
 function CodeBlock({ children }) {
@@ -29,14 +30,15 @@ function DataAccess() {
         <section>
           <SectionHeading
             title="Access the Data"
-            subtitle="Public downloads, API access, and versioned releases are forthcoming."
+            subtitle="Pilot data access is currently limited and reviewed manually; broader public release workflows are still being finalized."
           />
           <div className="grid md:grid-cols-3 gap-6">
             {[
               {
-                heading: 'Download (forthcoming)',
-                text: 'Public dataset downloads in CSV, JSON, and Parquet formats are forthcoming.',
-                cta: 'Forthcoming',
+                heading: 'Bulk Download Request',
+                text: 'Request access to the current pilot dataset. Requests are reviewed manually, and access is currently limited while validation and release workflows are still being expanded.',
+                cta: 'Request access',
+                to: '/contact?action=bulk-download#request-form',
               },
               {
                 heading: 'API (forthcoming)',
@@ -52,11 +54,28 @@ function DataAccess() {
               <div key={item.heading} className="bg-white border border-gray-200 rounded-lg p-6">
                 <h3 className="font-semibold text-gray-900 mb-2">{item.heading}</h3>
                 <p className="text-gray-600 text-sm leading-relaxed mb-4">{item.text}</p>
-                <span className="text-xs font-semibold text-primary-600 uppercase tracking-wider">
-                  {item.cta}
-                </span>
+                {item.to ? (
+                  <Link
+                    to={item.to}
+                    className="inline-flex items-center text-xs font-semibold text-primary-600 uppercase tracking-wider hover:text-primary-800"
+                  >
+                    {item.cta}
+                  </Link>
+                ) : (
+                  <span className="text-xs font-semibold text-primary-600 uppercase tracking-wider">
+                    {item.cta}
+                  </span>
+                )}
               </div>
             ))}
+          </div>
+          <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-900">
+            <p className="font-semibold">Current pilot access limitation</p>
+            <p className="mt-2 leading-relaxed">
+              Any bulk data shared at this stage should be understood as pilot only. Coverage and
+              validation are still in progress, so the data should not yet be interpreted as
+              systematic or fully validated.
+            </p>
           </div>
         </section>
 

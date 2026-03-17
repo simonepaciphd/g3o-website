@@ -1,10 +1,24 @@
+import { useEffect, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import SectionHeading from '../components/common/SectionHeading';
 
 const contactOptions = [
   {
+    slug: 'bulk-download',
+    title: 'Request Bulk Data Access',
+    description:
+      'Request access to the current pilot dataset. Requests are reviewed manually, and access is limited while the release workflow is still being finalized.',
+    icon: (
+      <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 16.5V3.75m0 12.75l-4.5-4.5m4.5 4.5l4.5-4.5M4.5 20.25h15" />
+      </svg>
+    ),
+  },
+  {
+    slug: 'submit',
     title: 'Submit Data',
     description:
-      'Have evidence of government GenAI use that is not yet in our database? A structured submission workflow is forthcoming; for now, please email us directly.',
+      'Have evidence of government GenAI use that is not yet in our database? Share it with us through the request form below.',
     icon: (
       <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
@@ -12,6 +26,7 @@ const contactOptions = [
     ),
   },
   {
+    slug: 'error',
     title: 'Report an Error',
     description:
       'Found inaccurate information in the dataset? Let us know so we can investigate and correct the record.',
@@ -22,6 +37,7 @@ const contactOptions = [
     ),
   },
   {
+    slug: 'add',
     title: 'Add Information',
     description:
       'Have additional context about an institution already in the database? Help us enrich existing records.',
@@ -32,6 +48,18 @@ const contactOptions = [
     ),
   },
   {
+    slug: 'update',
+    title: 'Suggest an Update',
+    description:
+      'Want to suggest a change to an existing record, classification, or source trail? Send us the details.',
+    icon: (
+      <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" />
+      </svg>
+    ),
+  },
+  {
+    slug: 'collaboration',
     title: 'Suggest a Collaboration',
     description:
       'Interested in partnering with G3O on data collection, tool development, or regional coverage expansion?',
@@ -42,6 +70,7 @@ const contactOptions = [
     ),
   },
   {
+    slug: 'research',
     title: 'Research Inquiries',
     description:
       'Looking for early data access, want to discuss methodology, or interested in using G3O data in your research?',
@@ -52,6 +81,7 @@ const contactOptions = [
     ),
   },
   {
+    slug: 'policy-partnership',
     title: 'Policy Partnership Inquiries',
     description:
       'Representing a government, international organization, or think tank? Explore how G3O can support your policy work.',
@@ -63,30 +93,129 @@ const contactOptions = [
   },
 ];
 
+const defaultInquiryType = 'research';
+
+function findContactOption(slug) {
+  return contactOptions.find((option) => option.slug === slug) || null;
+}
+
+function resolveInquiryType(action) {
+  return findContactOption(action)?.slug || defaultInquiryType;
+}
+
+function buildMailtoHref({
+  inquiryType,
+  institutionName,
+  fullName,
+  email,
+  affiliation,
+  usage,
+  details,
+  acknowledgedPilotLimits,
+}) {
+  const option = findContactOption(inquiryType);
+  const subject = option
+    ? `[G3O] ${option.title}`
+    : '[G3O] Contact Request';
+
+  const lines = [
+    `Inquiry type: ${option?.title || inquiryType}`,
+    institutionName ? `Institution: ${institutionName}` : '',
+    `Name: ${fullName}`,
+    `Email: ${email}`,
+    `Affiliation / organization: ${affiliation}`,
+    '',
+    'Planned use / request summary:',
+    usage,
+    '',
+    'Additional details:',
+    details || 'None provided.',
+  ];
+
+  if (inquiryType === 'bulk-download') {
+    lines.push(
+      '',
+      `Acknowledged pilot-only limitations: ${acknowledgedPilotLimits ? 'Yes' : 'No'}`,
+      'I understand the current G3O data under discussion are pilot-only, access is limited for now, and the data should not yet be understood as systematic or fully validated.',
+    );
+  }
+
+  return `mailto:g3o@stanford.edu?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(lines.join('\n'))}`;
+}
+
 function Contact() {
+  const location = useLocation();
+  const [inquiryType, setInquiryType] = useState(defaultInquiryType);
+  const [institutionName, setInstitutionName] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [affiliation, setAffiliation] = useState('');
+  const [usage, setUsage] = useState('');
+  const [details, setDetails] = useState('');
+  const [acknowledgedPilotLimits, setAcknowledgedPilotLimits] = useState(false);
+  const [formError, setFormError] = useState('');
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    setInquiryType(resolveInquiryType(params.get('action')));
+    setInstitutionName(params.get('institution') || '');
+  }, [location.search]);
+
+  useEffect(() => {
+    if (location.hash === '#request-form') {
+      document.getElementById('request-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [location.hash, location.search]);
+
+  const isBulkDownloadRequest = inquiryType === 'bulk-download';
+  const selectedOption = findContactOption(inquiryType);
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+
+    if (isBulkDownloadRequest && !acknowledgedPilotLimits) {
+      setFormError('Please acknowledge the current pilot-only data limitations before continuing.');
+      return;
+    }
+
+    setFormError('');
+
+    window.location.href = buildMailtoHref({
+      inquiryType,
+      institutionName,
+      fullName,
+      email,
+      affiliation,
+      usage,
+      details,
+      acknowledgedPilotLimits,
+    });
+  };
+
+  const inputClasses =
+    'w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-700 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500';
+
   return (
     <div>
-      {/* Header */}
       <div className="bg-primary-50 border-b border-gray-200">
         <div className="max-w-6xl mx-auto px-4 py-12">
           <h1 className="font-serif text-4xl font-bold text-primary-900">
             Contact &amp; Contribute
           </h1>
-          <p className="mt-3 text-gray-600 max-w-2xl">
-            G3O is a collaborative effort. Whether you want to share evidence, report an error, or
-            explore a partnership, we want to hear from you.
+          <p className="mt-3 text-gray-600 max-w-3xl">
+            G3O is a collaborative effort. Whether you want to share evidence, report an error,
+            request pilot data access, or explore a partnership, we want to hear from you.
           </p>
         </div>
       </div>
 
       <div className="max-w-6xl mx-auto px-4 py-16 space-y-20">
-        {/* Contact Options Grid */}
         <section>
           <SectionHeading title="How Can We Help?" />
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {contactOptions.map((option) => (
               <div
-                key={option.title}
+                key={option.slug}
                 className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow flex flex-col"
               >
                 <div className="text-primary-600 mb-4">{option.icon}</div>
@@ -95,22 +224,200 @@ function Contact() {
                   {option.description}
                 </p>
                 <div className="mt-5">
-                  <a
-                    href="mailto:g3o@stanford.edu"
+                  <Link
+                    to={`/contact?action=${option.slug}#request-form`}
                     className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary-600 hover:text-primary-800 transition-colors"
                   >
-                    Get in touch
+                    Start request
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
                     </svg>
-                  </a>
+                  </Link>
                 </div>
               </div>
             ))}
           </div>
         </section>
 
-        {/* General Contact */}
+        <section id="request-form">
+          <SectionHeading
+            title="Request Form"
+            subtitle="Submitting this form opens a prefilled email draft. The site does not yet have an automated submission backend."
+          />
+
+          <div className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+            <div className="border-b border-gray-100 bg-gradient-to-br from-[#1e3a5f] to-[#2563eb] px-6 py-6 text-white">
+              <div className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-100">
+                Selected request
+              </div>
+              <h2 className="mt-2 font-serif text-2xl font-semibold">
+                {selectedOption?.title || 'Contact request'}
+              </h2>
+              <p className="mt-2 max-w-3xl text-sm leading-relaxed text-blue-50/90">
+                Use this form to send us the key details we need to review your request manually.
+                If you do not use a desktop mail client, you can also copy the same information to
+                {' '}
+                <a href="mailto:g3o@stanford.edu" className="underline">
+                  g3o@stanford.edu
+                </a>.
+              </p>
+            </div>
+
+            <div className="space-y-6 px-6 py-6">
+              <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-900">
+                <p className="font-semibold">Current access note</p>
+                <p className="mt-2 leading-relaxed">
+                  Bulk data access is currently limited and reviewed case by case. The current
+                  dataset is pilot only and should not yet be understood as systematic or fully
+                  validated.
+                </p>
+              </div>
+
+              <form className="space-y-5" onSubmit={handleSubmit}>
+                <div className="grid gap-5 md:grid-cols-2">
+                  <div>
+                    <label className="mb-2 block text-xs font-medium uppercase tracking-wide text-gray-500">
+                      Inquiry type
+                    </label>
+                    <select
+                      value={inquiryType}
+                      onChange={(event) => setInquiryType(event.target.value)}
+                      className={inputClasses}
+                    >
+                      {contactOptions.map((option) => (
+                        <option key={option.slug} value={option.slug}>
+                          {option.title}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="mb-2 block text-xs font-medium uppercase tracking-wide text-gray-500">
+                      Institution or record
+                    </label>
+                    <input
+                      type="text"
+                      value={institutionName}
+                      onChange={(event) => setInstitutionName(event.target.value)}
+                      className={inputClasses}
+                      placeholder="Optional, but helpful for record-specific requests"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-2 block text-xs font-medium uppercase tracking-wide text-gray-500">
+                      Full name
+                    </label>
+                    <input
+                      type="text"
+                      value={fullName}
+                      onChange={(event) => setFullName(event.target.value)}
+                      className={inputClasses}
+                      placeholder="Your name"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-2 block text-xs font-medium uppercase tracking-wide text-gray-500">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(event) => setEmail(event.target.value)}
+                      className={inputClasses}
+                      placeholder="name@example.org"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-xs font-medium uppercase tracking-wide text-gray-500">
+                    Affiliation / organization
+                  </label>
+                  <input
+                    type="text"
+                    value={affiliation}
+                    onChange={(event) => setAffiliation(event.target.value)}
+                    className={inputClasses}
+                    placeholder="University, agency, nonprofit, company, or independent researcher"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-xs font-medium uppercase tracking-wide text-gray-500">
+                    {isBulkDownloadRequest ? 'Planned use of the data' : 'Request summary'}
+                  </label>
+                  <textarea
+                    value={usage}
+                    onChange={(event) => setUsage(event.target.value)}
+                    className={`${inputClasses} min-h-32`}
+                    placeholder={
+                      isBulkDownloadRequest
+                        ? 'Tell us how you plan to use the pilot data, what questions you are studying, and what kind of access you need.'
+                        : 'Tell us what you want to share, correct, or request.'
+                    }
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-xs font-medium uppercase tracking-wide text-gray-500">
+                    Additional context
+                  </label>
+                  <textarea
+                    value={details}
+                    onChange={(event) => setDetails(event.target.value)}
+                    className={`${inputClasses} min-h-28`}
+                    placeholder="Optional extra context, relevant sources, deadlines, or links"
+                  />
+                </div>
+
+                {isBulkDownloadRequest && (
+                  <label className="flex items-start gap-3 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-4 text-sm text-gray-700">
+                    <input
+                      type="checkbox"
+                      checked={acknowledgedPilotLimits}
+                      onChange={(event) => setAcknowledgedPilotLimits(event.target.checked)}
+                      className="mt-1 h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                    />
+                    <span>
+                      I understand the current G3O data available through this request are pilot
+                      only, access is limited for now, and the data should not yet be understood as
+                      systematic or fully validated.
+                    </span>
+                  </label>
+                )}
+
+                {formError && (
+                  <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                    {formError}
+                  </div>
+                )}
+
+                <div className="flex flex-wrap items-center gap-3">
+                  <button
+                    type="submit"
+                    className="inline-flex items-center rounded-xl bg-primary-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-primary-800"
+                  >
+                    Open email draft
+                  </button>
+                  <a
+                    href="mailto:g3o@stanford.edu"
+                    className="inline-flex items-center rounded-xl border border-gray-300 px-5 py-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+                  >
+                    Email directly instead
+                  </a>
+                </div>
+              </form>
+            </div>
+          </div>
+        </section>
+
         <section>
           <div className="bg-primary-800 rounded-xl px-8 py-10 text-center text-white">
             <h3 className="font-serif text-2xl font-bold mb-3">General Contact</h3>
